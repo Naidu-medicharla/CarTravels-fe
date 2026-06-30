@@ -835,8 +835,8 @@ export const BookingFlow: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <h4 className="font-bold text-white text-lg">{selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : (previewData?.vehicle?.name || 'Luxury Vehicle')}</h4>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{selectedCar?.category || previewData?.vehicle?.category || 'Premium Class'}</p>
+                      <h4 className="font-bold text-white text-lg">{selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : 'Luxury Vehicle'}</h4>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{selectedCar?.category || 'Premium Class'}</p>
                     </div>
                   </div>
 
