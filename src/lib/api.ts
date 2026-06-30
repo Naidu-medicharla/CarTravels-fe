@@ -1,4 +1,4 @@
-const BASE_URL = 'https://599d-103-206-104-58.ngrok-free.app';
+const BASE_URL = 'https://silly-foxes-write.loca.lt';
 
 export interface User {
   id: number;
@@ -80,7 +80,8 @@ export const api = {
       headers: {
         'accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       body: params.toString()
     });
@@ -105,7 +106,8 @@ export const api = {
       headers: {
         'accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       body: params.toString()
     });
@@ -129,7 +131,8 @@ export const api = {
       headers: {
         'accept': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     });
 
@@ -158,7 +161,8 @@ export const api = {
       headers: {
         'accept': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     });
 
@@ -182,7 +186,8 @@ export const api = {
         'accept': 'application/json',
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       body: JSON.stringify(payload)
     });
@@ -205,7 +210,8 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     });
 
@@ -222,7 +228,8 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     });
 
