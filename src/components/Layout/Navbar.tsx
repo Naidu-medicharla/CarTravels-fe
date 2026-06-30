@@ -30,7 +30,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isSticky ? 'bg-[#0a0a0a]/75 backdrop-blur-[20px] border-b border-white/5 shadow-2xl py-6' : 'bg-transparent py-10'}`}>
-      <div className="container flex justify-between items-center">
+      <div className="container px-6 md:px-8 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition group">
           <Car size={38} className="text-primary group-hover:scale-105 transition-transform" />

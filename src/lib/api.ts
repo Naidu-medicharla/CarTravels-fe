@@ -1,4 +1,4 @@
-const BASE_URL = 'https://silly-foxes-write.loca.lt';
+const BASE_URL = 'https://purple-zebras-grin.loca.lt';
 
 export interface User {
   id: number;

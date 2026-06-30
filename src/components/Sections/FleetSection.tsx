@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, ChevronDown, Check, Users, Settings, Flame, Loader2, MapPin } from 'lucide-react';
+import { Filter, ChevronDown, Check, Users, Settings, Flame, Loader2, MapPin, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 
@@ -73,6 +73,16 @@ export const FleetSection: React.FC = () => {
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showMobileFilters]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -134,7 +144,7 @@ export const FleetSection: React.FC = () => {
       {/* Background Hero Image */}
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-black/50 via-[#0B0B0C]/80 to-[#0B0B0C] z-10" />
       <div
-        className="absolute top-0 inset-x-0 h-[500px] bg-cover bg-center opacity-30 z-0"
+        className="absolute top-0 inset-x-0 h-[500px] bg-cover bg-center opacity-15 z-0"
         style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=2000)' }}
       />
 
@@ -142,17 +152,39 @@ export const FleetSection: React.FC = () => {
         {/* Main Layout with Sidebar */}
         <div className="flex flex-col lg:flex-row gap-8">
 
+          {/* Mobile Filter Overlay Background */}
+          {showMobileFilters && (
+            <div 
+              className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+              onClick={() => setShowMobileFilters(false)}
+            />
+          )}
+
           {/* Sidebar Filters */}
-          <div className="lg:w-[230px] flex-shrink-0 space-y-8 sticky top-24 h-fit">
-            <div className="flex items-center gap-2 mb-2">
-              <Filter className="text-primary" size={20} />
-              <h3 className="text-white font-bold tracking-widest uppercase">Filters</h3>
+          <div className={`
+            lg:w-[230px] lg:flex-shrink-0 lg:space-y-8 lg:sticky lg:top-24 lg:h-fit
+            ${showMobileFilters 
+              ? 'fixed inset-x-0 bottom-0 z-50 bg-[#0B0B0C] rounded-t-3xl border-t border-white/10 p-6 pt-8 max-h-[85vh] overflow-y-auto shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex flex-col space-y-8 pb-12 transition-transform duration-300'
+              : 'hidden lg:block'
+            }
+          `}>
+            <div className="flex justify-between items-center lg:mb-2">
+              <div className="flex items-center gap-2">
+                <Filter className="text-primary" size={20} />
+                <h3 className="text-white font-bold tracking-widest uppercase">Filters</h3>
+              </div>
+              <button onClick={() => setShowMobileFilters(false)} className="lg:hidden text-muted-foreground hover:text-white p-2 bg-white/5 rounded-full transition-colors">
+                <X size={20} />
+              </button>
             </div>
 
             {/* Rental Type */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rental type</h4>
-              <div className="flex bg-black/50 border border-white/10 rounded-lg p-1">
+            <details className="group space-y-4" open>
+              <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer flex justify-between items-center list-none outline-none marker:hidden">
+                Rental type
+                <ChevronDown size={14} className="opacity-50 group-open:rotate-180 transition-transform" />
+              </summary>
+              <div className="flex bg-black/50 border border-white/10 rounded-lg p-1 mt-4">
                 <button
                   onClick={() => setActiveTab('any')}
                   className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'any' ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white'}`}>Any</button>
@@ -163,95 +195,112 @@ export const FleetSection: React.FC = () => {
                   onClick={() => setActiveTab('drop')}
                   className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'drop' ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white'}`}>Per drop</button>
               </div>
-            </div>
+            </details>
 
             {/* Price Range */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max Price (Per Day)</h4>
-                <span className="text-sm font-bold text-primary transition-all">₹ {maxPrice}</span>
+            <details className="group space-y-4" open>
+              <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer flex justify-between items-center list-none outline-none marker:hidden">
+                Max Price (Per Day)
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-bold text-primary transition-all">₹ {maxPrice}</span>
+                  <ChevronDown size={14} className="opacity-50 group-open:rotate-180 transition-transform" />
+                </div>
+              </summary>
+              <div className="mt-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="20000"
+                  step="500"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer hover:bg-white/20 transition-all focus:outline-none focus:ring-1 focus:ring-primary/50 mt-2"
+                  style={{
+                    background: `linear-gradient(to right, #C6A87C ${(maxPrice / 20000) * 100}%, rgba(255,255,255,0.1) ${(maxPrice / 20000) * 100}%)`
+                  }}
+                />
+                <style>{`
+                  input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: #C6A87C;
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(198, 168, 124, 0.5);
+                    transition: transform 0.1s;
+                  }
+                  input[type=range]::-webkit-slider-thumb:hover {
+                    transform: scale(1.2);
+                  }
+                  details > summary::-webkit-details-marker {
+                    display: none;
+                  }
+                `}</style>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="20000"
-                step="500"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer hover:bg-white/20 transition-all focus:outline-none focus:ring-1 focus:ring-primary/50"
-                style={{
-                  background: `linear-gradient(to right, #C6A87C ${(maxPrice / 20000) * 100}%, rgba(255,255,255,0.1) ${(maxPrice / 20000) * 100}%)`
-                }}
-              />
-              <style>{`
-                input[type=range]::-webkit-slider-thumb {
-                  -webkit-appearance: none;
-                  appearance: none;
-                  width: 16px;
-                  height: 16px;
-                  border-radius: 50%;
-                  background: #C6A87C;
-                  cursor: pointer;
-                  box-shadow: 0 0 10px rgba(198, 168, 124, 0.5);
-                  transition: transform 0.1s;
-                }
-                input[type=range]::-webkit-slider-thumb:hover {
-                  transform: scale(1.2);
-                }
-              `}</style>
-            </div>
+            </details>
 
             {/* Availability */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Availability</h4>
+            <details className="group space-y-4" open>
+              <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer flex justify-between items-center list-none outline-none marker:hidden">
+                Availability
+                <ChevronDown size={14} className="opacity-50 group-open:rotate-180 transition-transform" />
+              </summary>
               <label
-                className="flex items-center gap-3 cursor-pointer group"
+                className="flex items-center gap-3 cursor-pointer group/label mt-4"
                 onClick={(e) => {
-                  e.preventDefault(); // prevent default to avoid double-firing if label wraps input
+                  e.preventDefault();
                   setShowOnlyAvailable(!showOnlyAvailable);
                 }}
               >
                 <div className={`w-10 h-5 rounded-full flex items-center p-1 transition-colors duration-300 ${showOnlyAvailable ? 'bg-primary' : 'bg-white/20'}`}>
                   <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-sm ${showOnlyAvailable ? 'translate-x-5' : 'translate-x-0'}`} />
                 </div>
-                <span className="text-sm text-white/80 group-hover:text-white transition-colors">Show only available cars</span>
+                <span className="text-sm text-white/80 group-hover/label:text-white transition-colors">Show only available cars</span>
               </label>
-            </div>
+            </details>
 
             {/* Location */}
             {uniqueLocations.length > 0 && (
-              <div className="space-y-4">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Location</h4>
-                <div className="flex flex-col gap-3">
+              <details className="group space-y-4" open>
+                <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer flex justify-between items-center list-none outline-none marker:hidden">
+                  Location
+                  <ChevronDown size={14} className="opacity-50 group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="flex flex-col gap-3 mt-4">
                   {uniqueLocations.map(loc => (
-                    <label key={loc} onClick={() => toggleLocation(loc)} className="flex items-center gap-3 cursor-pointer group">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedLocations.includes(loc) ? 'bg-primary border-primary' : 'bg-transparent border-white/20 group-hover:border-primary/50'}`}>
+                    <label key={loc} onClick={() => toggleLocation(loc)} className="flex items-center gap-3 cursor-pointer group/label">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedLocations.includes(loc) ? 'bg-primary border-primary' : 'bg-transparent border-white/20 group-hover/label:border-primary/50'}`}>
                         {selectedLocations.includes(loc) && <Check size={12} className="text-black" />}
                       </div>
-                      <span className="text-sm text-white/80 group-hover:text-white transition-colors">{loc}</span>
+                      <span className="text-sm text-white/80 group-hover/label:text-white transition-colors">{loc}</span>
                     </label>
                   ))}
                 </div>
-              </div>
+              </details>
             )}
 
-            <hr className="border-white/10" />
+            <hr className="border-white/10 hidden lg:block" />
 
             {/* Car Brand */}
             {uniqueBrands.length > 0 && (
-              <div className="space-y-4">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Car Brand</h4>
-                <div className="flex flex-col gap-3">
+              <details className="group space-y-4" open>
+                <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer flex justify-between items-center list-none outline-none marker:hidden">
+                  Car Brand
+                  <ChevronDown size={14} className="opacity-50 group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="flex flex-col gap-3 mt-4">
                   {uniqueBrands.map(brand => (
-                    <label key={brand} onClick={() => toggleBrand(brand)} className="flex items-center gap-3 cursor-pointer group">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand) ? 'bg-primary border-primary' : 'bg-transparent border-white/20 group-hover:border-primary/50'}`}>
+                    <label key={brand} onClick={() => toggleBrand(brand)} className="flex items-center gap-3 cursor-pointer group/label">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand) ? 'bg-primary border-primary' : 'bg-transparent border-white/20 group-hover/label:border-primary/50'}`}>
                         {selectedBrands.includes(brand) && <Check size={12} className="text-black" />}
                       </div>
-                      <span className="text-sm text-white/80 group-hover:text-white transition-colors">{brand}</span>
+                      <span className="text-sm text-white/80 group-hover/label:text-white transition-colors">{brand}</span>
                     </label>
                   ))}
                 </div>
-              </div>
+              </details>
             )}
 
           </div>
@@ -260,12 +309,17 @@ export const FleetSection: React.FC = () => {
           <div className="flex-1 min-h-[1000px]">
             {/* Header Layout */}
             <div className="mb-12">
-              <h2 className="font-heading font-bold text-5xl text-white mb-4 tracking-wide uppercase">Our Fleet</h2>
+              <h2 className="font-heading font-bold text-4xl lg:text-5xl text-white mb-4 tracking-wide uppercase">Our Fleet</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Premium luxury cars.<br />
                 <span className="text-primary">★★★★★</span> Trusted by 12,000+ travelers
               </p>
             </div>
+
+            {/* Mobile Filter Toggle */}
+            <button onClick={() => setShowMobileFilters(true)} className="lg:hidden flex items-center justify-center gap-2 mb-8 text-primary font-bold tracking-widest uppercase border border-primary/20 bg-primary/5 px-6 py-4 rounded-xl w-full hover:bg-primary/10 transition-colors">
+              <Filter size={18} /> Filters
+            </button>
 
             {/* Top Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b border-white/10 pb-6">
@@ -291,7 +345,7 @@ export const FleetSection: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-20">
                 <AnimatePresence>
                   {filteredCars.map((car, i) => (
                     <motion.div
@@ -300,7 +354,7 @@ export const FleetSection: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: i * 0.05, duration: 0.4 }}
-                      className="group flex flex-col relative bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.55)] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 cursor-pointer"
+                      className="group flex flex-col relative bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.55)] rounded-2xl p-5 lg:p-6 transition-all duration-300 active:scale-[0.98] lg:active:scale-100 lg:hover:-translate-y-2 cursor-pointer"
                     >
                       {car.badge && (
                         <div className="absolute top-0 right-6 px-3 py-1.5 bg-gradient-to-r from-primary to-yellow-600 text-black text-[10px] font-extrabold tracking-widest uppercase z-10 translate-y-[-50%] rounded shadow-lg">
@@ -309,7 +363,7 @@ export const FleetSection: React.FC = () => {
                       )}
 
                       {/* Car Image */}
-                      <div className="h-56 w-full mb-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-[1.03]">
+                      <div className="h-56 w-full mb-8 flex items-center justify-center transition-transform duration-500 scale-[1.15] lg:scale-100 group-hover:scale-[1.20] lg:group-hover:scale-[1.03]">
                         <img src={car.img} alt={car.name} className="max-h-full object-contain filter drop-shadow-2xl" />
                       </div>
 
@@ -330,7 +384,7 @@ export const FleetSection: React.FC = () => {
                           </div>
                         )}
 
-                        <div className="mt-auto w-full pt-5 border-t border-white/5 flex items-center justify-between gap-1">
+                        <div className="mt-auto w-full pt-5 border-t border-white/5 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-1">
                           <div className="flex items-baseline whitespace-nowrap">
                             <span className="text-white font-sans font-bold text-2xl transition-colors">
                               {activeTab === 'drop' ? car.dropPrice : car.price}
@@ -347,7 +401,7 @@ export const FleetSection: React.FC = () => {
                                 navigate(`/login?redirect=/book?type=${type}&car=${car.carNumber}`);
                               }
                             }}
-                            className="px-4 py-2 flex-shrink-0 border border-white/20 hover:border-white text-white hover:bg-white/5 transition-all duration-300 rounded-xl text-sm font-bold tracking-wider uppercase whitespace-nowrap"
+                            className="w-full lg:w-auto px-4 py-3 lg:py-2 flex-shrink-0 border border-white/20 hover:border-white text-white hover:bg-white/5 transition-all duration-300 rounded-xl text-sm font-bold tracking-wider uppercase whitespace-nowrap text-center"
                           >
                             Book Now
                           </button>

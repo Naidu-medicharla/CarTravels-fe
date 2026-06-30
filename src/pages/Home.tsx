@@ -36,26 +36,27 @@ export const Home: React.FC = () => {
   return (
     <div className="bg-background min-h-screen font-sans">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden">
+      <section className="relative min-h-screen flex items-center pt-20 md:pt-24 pb-12 overflow-hidden">
         {/* Cinematic Background Image & Gradient */}
-        <motion.div 
+        <motion.div
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0 bg-cover bg-center"
+          className="absolute inset-0 z-0 bg-cover bg-[75%_center] md:bg-center"
           style={{ backgroundImage: `url(${bgImage})` }}
         />
         {/* Fog/Vignette Overlays - Lightened for better car visibility */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-black/40 to-transparent" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] md:via-black/40 to-transparent" />
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/10" />
-        <div className="absolute inset-0 z-0 bg-black/10" />
-        
-        
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent md:hidden" />
+        <div className="absolute inset-0 z-0 bg-black/10 md:bg-black/10" />
+
+
 
 
         <div className="container relative z-10 grid lg:grid-cols-12 gap-12 items-center">
-          
-          <motion.div 
+
+          <motion.div
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
@@ -66,50 +67,50 @@ export const Home: React.FC = () => {
               <img src={starImage} alt="star" className="w-4 h-4 relative z-10" />
               <span className="text-xs font-semibold text-primary tracking-[0.2em] uppercase relative z-10">Premium Travel Service</span>
             </motion.div>
-            
-            <motion.h1 variants={fadeInUp} className="font-heading text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 drop-shadow-2xl">
-              <span className="text-white font-light tracking-wide">Premium Travel,</span><br/>
+
+            <motion.h1 variants={fadeInUp} className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.15] md:leading-[1.1] mb-6 md:mb-8 drop-shadow-2xl">
+              <span className="text-white font-light tracking-wide">Premium Travel,</span><br />
               <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] italic">Perfectly Timed.</span>
             </motion.h1>
-            
-            <motion.p variants={fadeInUp} className="text-lg text-white/70 leading-[1.8] mb-12 max-w-md font-light">
+
+            <motion.p variants={fadeInUp} className="text-base md:text-lg text-white/80 leading-[1.8] mb-48 md:mb-12 max-w-[320px] md:max-w-md font-light">
               Experience seamless airport transfers, outstation journeys, corporate travel, and premium chauffeur services with Vibe Travels. Every ride is designed for comfort, reliability, and elegance.
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 items-center">
-              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 hover:shadow-[0_20px_40px_rgba(212,175,55,0.3)] hover:-translate-y-1 font-bold px-8 h-14 rounded-full transition-all duration-300 group">
+            <motion.div variants={fadeInUp} className="flex flex-col md:flex-row gap-4 items-start md:items-center max-w-[320px] md:max-w-none">
+              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 hover:shadow-[0_20px_40px_rgba(212,175,55,0.3)] hover:-translate-y-1 font-bold px-8 h-14 w-[240px] md:w-auto rounded-full transition-all duration-300 group">
                 Book Your Ride <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-white hover:text-primary hover:bg-white/5 h-14 px-6 rounded-full font-medium transition-colors group relative overflow-hidden">
+              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-white hover:text-primary bg-white/5 border border-white/10 hover:bg-white/10 h-14 px-6 w-[240px] md:w-auto rounded-full font-medium transition-colors group relative overflow-hidden">
                 View Fleet
                 <div className="absolute bottom-3 left-6 right-6 h-px bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 <ArrowRight className="ml-2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </Button>
             </motion.div>
-            
-            <motion.div variants={fadeInUp} className="mt-12 flex items-center gap-4">
+
+            <motion.div variants={fadeInUp} className="mt-8 md:mt-12 flex flex-col md:flex-row items-start md:items-center gap-4">
               <div className="flex -space-x-3">
-                {[1,2,3,4].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="Customer" className="w-full h-full object-cover" />
+                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Customer" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center text-primary mb-0.5">
-                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
                   <span className="text-white font-bold text-sm ml-2">4.9</span>
                 </div>
                 <span className="text-xs text-white/50">Trusted by 12,000+ Customers</span>
               </div>
             </motion.div>
           </motion.div>
-          
+
 
         </div>
 
         {/* Scroll Indicator */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
@@ -149,12 +150,12 @@ export const Home: React.FC = () => {
       <section className="py-24 border-t border-white/5 bg-white/[0.01]">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16">
-            
+
             {/* Why Choose Us */}
             <div>
               <h2 className="font-heading font-medium text-4xl text-white mb-4">Why <span className="text-primary">Vibe Travels</span></h2>
               <p className="text-muted-foreground mb-12">We don&apos;t just rent cars; we provide a premium lifestyle experience.</p>
-              
+
               <div className="grid sm:grid-cols-2 gap-6">
                 {[
                   { title: "Luxury Fleet", desc: "Top-tier vehicles from world-class brands." },
@@ -162,7 +163,7 @@ export const Home: React.FC = () => {
                   { title: "24/7 Assistance", desc: "Round the clock support for your peace of mind." },
                   { title: "Transparent Pricing", desc: "No hidden charges, pure premium value." }
                 ].map((feature, i) => (
-                  <motion.div 
+                  <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -192,7 +193,7 @@ export const Home: React.FC = () => {
                   { step: "3", title: "Confirm & Pay", desc: "Secure payment gateway." },
                   { step: "4", title: "Enjoy the Ride", desc: "Experience pure luxury." }
                 ].map((item, i) => (
-                  <motion.div 
+                  <motion.div
                     key={i}
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
