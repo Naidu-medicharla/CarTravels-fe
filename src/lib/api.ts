@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://599d-103-206-104-58.ngrok-free.app';
 
 export interface User {
   id: number;
@@ -79,11 +79,12 @@ export const api = {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: params.toString()
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Login failed';
       try {
@@ -103,11 +104,12 @@ export const api = {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: params.toString()
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Registration failed';
       try {
@@ -126,7 +128,8 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true'
       }
     });
 
@@ -154,7 +157,8 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true'
       }
     });
 
@@ -177,7 +181,8 @@ export const api = {
       headers: {
         'accept': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify(payload)
     });
@@ -200,6 +205,7 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       }
     });
 
@@ -216,9 +222,10 @@ export const api = {
       method: 'GET',
       headers: {
         'accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       }
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Failed to fetch profile details';
       try {
