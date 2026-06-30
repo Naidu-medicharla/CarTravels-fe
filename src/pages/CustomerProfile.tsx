@@ -68,7 +68,7 @@ export const CustomerProfile: React.FC = () => {
            </div>
 
            {/* Compressed Profile Card */}
-           <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 flex items-center gap-4">
+           <div className="glass-panel rounded-2xl p-4 flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-primary/30 shrink-0 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
                 <User size={24} className="text-primary" />
               </div>
@@ -113,7 +113,7 @@ export const CustomerProfile: React.FC = () => {
            {/* Current Booking (Simulated if history exists) Removed per user request */}
 
            {/* Membership */}
-           <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 mt-2 relative overflow-hidden">
+           <div className="glass-panel rounded-2xl p-4 mt-2 relative overflow-hidden">
              <div className="absolute top-0 right-0 p-2 opacity-10"><Crown size={60} className="text-primary" /></div>
              <div className="flex justify-between items-end mb-4 z-10 relative">
                <div>
@@ -152,7 +152,7 @@ export const CustomerProfile: React.FC = () => {
                     </div>
                  </div>
                )) : (
-                 <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 text-center">
+                 <div className="glass-panel rounded-2xl p-6 text-center">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 text-primary">
                       <Car size={20} />
                     </div>
@@ -168,19 +168,19 @@ export const CustomerProfile: React.FC = () => {
            <div className="mt-4 mb-8">
              <h3 className="font-heading font-bold text-lg text-white mb-4 px-1">Travel Stats</h3>
              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
+                <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Total Spend</span>
                    <span className="text-xl font-bold text-white">₹{profile?.total_spend?.toLocaleString() ?? 0}</span>
                 </div>
-                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
+                <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Completed</span>
                    <span className="text-xl font-bold text-white">{profile?.total_trips ?? 0} Trips</span>
                 </div>
-                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
+                <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Avg Rating</span>
                    <span className="text-xl font-bold text-white flex items-center justify-center gap-1">{profile?.avg_rating?.toFixed(1) ?? '0.0'} <Star size={14} className="text-primary fill-primary" /></span>
                 </div>
-                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
+                <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Distance</span>
                    <span className="text-xl font-bold text-white">-</span>
                 </div>
@@ -188,7 +188,7 @@ export const CustomerProfile: React.FC = () => {
            </div>
            
            {/* Settings & Help Footer */}
-           <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden mb-8">
+           <div className="glass-panel rounded-2xl overflow-hidden mb-8">
              <button className="w-full flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-3"><Settings size={16} className="text-muted-foreground" /><span className="text-sm font-medium text-white">Settings</span></div>
                 <ChevronRight size={16} className="text-white/30" />
@@ -215,7 +215,7 @@ export const CustomerProfile: React.FC = () => {
                   <p className="text-xs text-muted-foreground mt-1">{profile?.all_bookings?.length || 0} Confirmed Trips</p>
                 </div>
                 {profile?.all_bookings?.length ? profile.all_bookings.slice(0, visibleTrips).map((booking, idx) => (
-                   <div key={idx} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-4 relative overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors">
+                   <div key={idx} className="glass-panel rounded-2xl p-4 flex flex-col gap-4 relative overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors">
                        <div className="flex justify-between items-start">
                           <div>
                              <h4 className="font-bold text-white text-base">{booking.car_name}</h4>
@@ -245,7 +245,7 @@ export const CustomerProfile: React.FC = () => {
                        </div>
                    </div>
                 )) : (
-                  <div className="text-center py-16 flex flex-col items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl">
+                  <div className="text-center py-16 flex flex-col items-center justify-center glass-panel rounded-2xl">
                     <Car size={40} className="mb-4 text-white/10" />
                     <h4 className="text-white font-bold mb-1">No trips yet.</h4>
                     <p className="text-xs text-muted-foreground mb-4">Book your first premium ride.</p>

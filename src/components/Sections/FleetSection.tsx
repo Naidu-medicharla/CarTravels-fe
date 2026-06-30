@@ -335,7 +335,7 @@ export const FleetSection: React.FC = () => {
                 <p className="text-muted-foreground tracking-widest uppercase font-bold text-sm animate-pulse">Loading Fleet...</p>
               </div>
             ) : filteredCars.length === 0 ? (
-              <div className="w-full flex flex-col items-center justify-center py-32 border border-white/5 rounded-2xl bg-white/[0.02]">
+              <div className="w-full flex flex-col items-center justify-center py-32 glass-panel rounded-2xl">
                 <p className="text-muted-foreground tracking-widest uppercase font-bold">No vehicles match your criteria</p>
                 <button
                   onClick={() => { setActiveTab('any'); setSelectedBrands([]); setSelectedLocations([]); }}
@@ -354,7 +354,7 @@ export const FleetSection: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: i * 0.05, duration: 0.4 }}
-                      className="group flex flex-col relative bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.55)] rounded-2xl p-5 lg:p-6 transition-all duration-300 active:scale-[0.98] lg:active:scale-100 lg:hover:-translate-y-2 cursor-pointer"
+                      className="group flex flex-col relative glass-panel hover:border-primary/30 hover:shadow-[0_20px_60px_rgba(212,175,55,0.15)] rounded-2xl p-5 lg:p-6 transition-all duration-300 active:scale-[0.98] lg:active:scale-100 lg:hover:-translate-y-2 cursor-pointer"
                     >
                       {car.badge && (
                         <div className="absolute top-0 right-6 px-3 py-1.5 bg-gradient-to-r from-primary to-yellow-600 text-black text-[10px] font-extrabold tracking-widest uppercase z-10 translate-y-[-50%] rounded shadow-lg">

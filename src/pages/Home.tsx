@@ -187,7 +187,7 @@ export const Home: React.FC = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="w-full md:w-48 p-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-3 hover:border-primary/50 transition-colors"
+                  className="w-full md:w-48 p-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:border-primary/50 transition-colors"
                 >
                   <span className="text-xl text-primary">{item.step}</span>
                   <span className="font-bold text-white text-sm md:text-base">{item.title}</span>
@@ -227,7 +227,18 @@ export const Home: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="min-h-[160px] py-4"
+                className="min-h-[160px] py-8 px-6 md:px-12 glass-panel rounded-3xl mx-auto max-w-2xl flex flex-col justify-center cursor-grab active:cursor-grabbing"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(e, { offset, velocity }) => {
+                  const swipe = offset.x;
+                  if (swipe < -50) {
+                    setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+                  } else if (swipe > 50) {
+                    setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+                  }
+                }}
               >
                 <p className="text-xl md:text-2xl text-white font-medium italic mb-8 leading-relaxed">"{testimonials[activeTestimonial].text}"</p>
                 <p className="text-base text-primary uppercase tracking-widest font-bold">— {testimonials[activeTestimonial].author}</p>

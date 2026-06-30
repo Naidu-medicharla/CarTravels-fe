@@ -9,6 +9,7 @@ import { BookingFlow } from './pages/BookingFlow';
 import { CustomerProfile } from './pages/CustomerProfile';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Login } from './pages/Login';
+import { Services } from './pages/Services';
 import loadingVideo from './assets/landing_loading.mp4';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -80,6 +81,7 @@ function App() {
                   <Route path="/profile" element={<CustomerProfile />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/cars" element={<Cars />} />
+                  <Route path="/services" element={<Services />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/login" element={<Login />} />

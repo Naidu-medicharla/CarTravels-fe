@@ -277,7 +277,7 @@ export const BookingFlow: React.FC = () => {
                 {/* Left Column: Form Cards */}
                 <div className="space-y-8">
                   {/* Trip Details Card */}
-                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 md:p-8">
+                  <div className="glass-panel rounded-2xl p-6 md:p-8">
                     <h2 className="font-heading text-[30px] font-bold text-white mb-8 border-b border-white/5 pb-4">Trip Details</h2>
                     
                     <div className="space-y-8">
@@ -424,7 +424,7 @@ export const BookingFlow: React.FC = () => {
 
                   {/* Driver Preference Card */}
                   {bookingType === 'rental' && (
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 md:p-8">
+                    <div className="glass-panel rounded-2xl p-6 md:p-8">
                       <h2 className="font-heading text-[30px] font-bold text-white mb-8 border-b border-white/5 pb-4">Driver Preference</h2>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div 
@@ -559,7 +559,7 @@ export const BookingFlow: React.FC = () => {
                 <div className="space-y-6">
                   
                   {/* Car Details Section */}
-                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5">
+                  <div className="glass-panel rounded-2xl p-5">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                       <div className="w-full md:w-auto h-32 flex-shrink-0 flex items-center justify-center">
                         <img src={selectedCar?.images?.[0] || (selectedCar ? getFallbackImage(selectedCar.brand, selectedCar.model) : "https://freepngimg.com/thumb/car/3-2-car-free-download-png.png")} alt="Car preview" className="w-[140px] md:w-[160px] object-contain filter drop-shadow-2xl" />
@@ -597,7 +597,7 @@ export const BookingFlow: React.FC = () => {
                   </div>
 
                   {/* Billing Profile Summary */}
-                  <details className="group bg-white/[0.02] border border-white/10 rounded-2xl transition-all duration-300">
+                  <details className="group glass-panel rounded-2xl transition-all duration-300">
                     <summary className="flex justify-between items-center p-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden select-none">
                       <div className="flex items-center gap-2">
                         <h3 className="font-heading text-xl text-white">Billing Profile</h3>
@@ -825,7 +825,7 @@ export const BookingFlow: React.FC = () => {
                 </div>
 
                 {/* Booking Summary Card */}
-                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 mb-8 text-left">
+                <div className="glass-panel rounded-2xl p-6 mb-8 text-left">
                   <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
                     <div className="w-20 h-12 relative rounded-md flex items-center justify-center bg-black/40 border border-white/10 px-1">
                       <img 

@@ -57,5 +57,5 @@
 
 /* Base custom styles to retain luxury aesthetic */
 .glass-panel {
-  @apply bg-card/80 backdrop-blur-md border border-white/5 shadow-2xl;
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
 }
