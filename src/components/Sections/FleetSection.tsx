@@ -401,7 +401,7 @@ export const FleetSection: React.FC = () => {
                                 navigate(`/login?redirect=/book?type=${type}&car=${car.carNumber}`);
                               }
                             }}
-                            className="w-full lg:w-auto px-4 py-3 lg:py-2 flex-shrink-0 border border-white/20 hover:border-white text-white hover:bg-white/5 transition-all duration-300 rounded-xl text-sm font-bold tracking-wider uppercase whitespace-nowrap text-center"
+                            className="w-full lg:w-auto px-4 py-3 lg:py-2 flex-shrink-0 border border-white/20 hover:border-white text-white hover:bg-white/5 active:scale-95 active:bg-white/10 active:border-white transition-all duration-300 rounded-xl text-sm font-bold tracking-wider uppercase whitespace-nowrap text-center"
                           >
                             Book Now
                           </button>

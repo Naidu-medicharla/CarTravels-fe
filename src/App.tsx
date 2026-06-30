@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastProvider } from './components/Feedback/ToastContext';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
+import { ScrollToTop } from './components/UI/ScrollToTop';
 import { Home } from './pages/Home';
 import { BookingFlow } from './pages/BookingFlow';
 import { CustomerProfile } from './pages/CustomerProfile';
@@ -70,6 +71,7 @@ function App() {
           <ToastProvider>
             <div className="flex flex-col min-h-screen bg-background">
               <Navbar />
+              <ScrollToTop />
               
               <main className="flex-1">
                 <Routes>

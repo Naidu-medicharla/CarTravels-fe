@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ChevronRight, ChevronLeft, MapPin, Calendar, CreditCard, ShieldCheck, Users, Briefcase, Navigation, Settings, Loader2, Flag, Lock, Shield, HelpCircle, Download, X } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, MapPin, Calendar, CreditCard, ShieldCheck, Users, Briefcase, Navigation, Settings, Loader2, Flag, Lock, Shield, HelpCircle, Download, X, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -172,9 +172,7 @@ export const BookingFlow: React.FC = () => {
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-20 pb-24 relative overflow-hidden flex flex-col items-center">
-      {/* Subtle Background Glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-28 pb-8 relative overflow-hidden flex flex-col items-center">
 
       {/* Toast Notification */}
       <AnimatePresence>
@@ -221,41 +219,50 @@ export const BookingFlow: React.FC = () => {
       <div className="container w-full max-w-[1120px] px-4 md:px-8">
         
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="font-heading font-bold text-5xl md:text-6xl text-white mb-4 tracking-wide">Complete Your <span className="text-primary">Booking</span></h1>
-          <p className="text-muted-foreground text-lg">Reserve your luxury vehicle in just a few steps.</p>
+        <div className="text-center mb-8">
+          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-2 tracking-wide">Complete Your <span className="text-primary">Booking</span></h1>
+          <p className="text-muted-foreground text-base">Reserve your luxury vehicle in just a few steps.</p>
         </div>
 
-        {/* Stepper */}
-        <div className="relative flex justify-between items-center mb-10 px-8 md:px-12 max-w-2xl mx-auto">
-          <div className="absolute left-[60px] right-[60px] top-6 h-[1px] bg-white/20 -z-10" />
-          <div 
-            className="absolute left-[60px] top-6 h-[2px] bg-primary -z-10 transition-all duration-500 ease-in-out shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
-            style={{ width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - ${((currentStep - 1) / (steps.length - 1)) * 120}px)` }}
-          />
-          
-          {steps.map((step) => {
-            const Icon = step.icon;
-            const isCompleted = currentStep > step.id;
-            const isCurrent = currentStep === step.id;
-            
-            return (
-              <div key={step.id} className={`flex flex-col items-center gap-3 transition-opacity duration-300 ${!isCurrent && !isCompleted ? 'opacity-50' : 'opacity-100'}`}>
-                <div 
-                  className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                    ${isCompleted ? 'bg-primary border-primary text-black' : 
-                      isCurrent ? 'bg-background border-primary text-primary shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 
-                      'bg-background border-white/20 text-muted-foreground'
-                    }`}
-                >
-                  {isCompleted ? <CheckCircle2 size={20} /> : <Icon size={20} />}
+        {/* Compact Stepper */}
+        <div className="relative mb-8 px-4 md:px-12 max-w-md mx-auto">
+          <div className="relative flex justify-between items-start z-10 w-full">
+            {steps.map((step, index) => {
+              const isCompleted = currentStep > step.id;
+              const isCurrent = currentStep === step.id;
+              const shortTitle = step.id === 1 ? 'Trip' : step.id === 2 ? 'Pay' : 'Confirm';
+              
+              return (
+                <div key={step.id} className="relative flex flex-col items-center flex-1">
+                  {/* Progress Line connecting to previous step */}
+                  {index !== 0 && (
+                    <div className="absolute top-[10px] left-[-50%] right-[50%] h-[2px] bg-white/20 z-0">
+                      <div 
+                        className={`h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(212,175,55,0.5)] ${
+                          isCompleted || isCurrent ? 'w-full' : 'w-0'
+                        }`} 
+                      />
+                    </div>
+                  )}
+
+                  {/* Dot */}
+                  <div className={`relative z-10 rounded-full flex items-center justify-center transition-all duration-300
+                      ${isCompleted || (currentStep === 3 && step.id === 3) ? 'w-5 h-5 bg-primary text-black' : 
+                        isCurrent ? 'w-5 h-5 bg-primary shadow-[0_0_15px_rgba(212,175,55,0.6)]' : 
+                        'w-5 h-5 bg-[#0a0a0a] border-2 border-white/20'
+                      }`}
+                  >
+                    {(isCompleted || (currentStep === 3 && step.id === 3)) && <CheckCircle2 size={12} className="stroke-[3]" />}
+                  </div>
+                  
+                  {/* Label */}
+                  <span className={`text-[11px] font-bold uppercase tracking-widest mt-2 transition-opacity duration-300 ${isCurrent ? 'text-primary' : 'text-white/80'} ${!isCurrent && !isCompleted ? 'opacity-50' : 'opacity-100'}`}>
+                    {shortTitle}
+                  </span>
                 </div>
-                <span className={`text-xs font-semibold uppercase tracking-wider ${isCurrent ? 'text-primary' : 'text-white'}`}>
-                  {step.title}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Content Area */}
@@ -268,20 +275,20 @@ export const BookingFlow: React.FC = () => {
                 className="grid lg:grid-cols-[1fr_380px] gap-12 items-start pb-32"
               >
                 {/* Left Column: Form Cards */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {/* Trip Details Card */}
-                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
-                    <h2 className="font-heading text-3xl font-bold text-white mb-8 border-b border-white/5 pb-4">Trip Details</h2>
+                  <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 md:p-8">
+                    <h2 className="font-heading text-[30px] font-bold text-white mb-8 border-b border-white/5 pb-4">Trip Details</h2>
                     
                     <div className="space-y-8">
                       <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Location</h3>
-                        <div className="space-y-4">
+                        <h3 className="text-[22px] font-semibold text-white mb-4">Location</h3>
+                        <div className="space-y-6">
                           <div>
-                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Pickup Location</label>
+                            <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Pickup Location</label>
                             <div className="relative">
                               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                              <Input disabled value="Gachibowli, Hyderabad (HQ)" className="pl-12 h-14 bg-black/40 border-white/10 text-white rounded-xl disabled:opacity-100 disabled:cursor-not-allowed" />
+                              <Input disabled value="Gachibowli, Hyderabad (HQ)" className="pl-12 h-14 bg-black/40 border-white/10 text-[16px] text-white rounded-2xl disabled:opacity-100 disabled:cursor-not-allowed" />
                             </div>
                             <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
                               <strong className="text-primary font-bold">Note:</strong> Please collect the vehicle from our headquarters. If you require delivery to your specific location, please contact our support team. Additional delivery charges may apply.
@@ -289,24 +296,24 @@ export const BookingFlow: React.FC = () => {
                           </div>
                           {bookingType === 'drop' && (
                             <div>
-                              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Drop-off Location</label>
+                              <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Drop-off Location</label>
                               <div className="relative">
                                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                                <Input className="pl-12 h-14 bg-black/40 border-white/10 text-white rounded-xl focus-visible:ring-primary" placeholder="Enter drop-off address" />
+                                <Input className="pl-12 h-14 bg-black/40 border-white/10 text-[16px] text-white rounded-2xl focus-visible:ring-primary focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all" placeholder="Enter drop-off address" />
                               </div>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Schedule</h3>
-                        <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-4 pt-4">
+                        <h3 className="text-[22px] font-semibold text-white mb-4">Schedule</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
                           <div>
-                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Pickup Date</label>
+                            <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Pickup Date</label>
                             <Popover.Root open={isPickupOpen} onOpenChange={setIsPickupOpen}>
                               <Popover.Trigger asChild>
-                                <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-white rounded-xl hover:bg-white/5 transition-colors flex items-center">
+                                <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center">
                                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                   {pickupDate ? format(parseISO(pickupDate), 'PPP') : <span className="text-muted-foreground">Select date</span>}
                                 </button>
@@ -357,10 +364,10 @@ export const BookingFlow: React.FC = () => {
                           </div>
                           {bookingType === 'rental' && (
                             <div>
-                              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Return Date</label>
+                              <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Return Date</label>
                               <Popover.Root open={isReturnOpen} onOpenChange={setIsReturnOpen}>
                                 <Popover.Trigger asChild>
-                                  <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-white rounded-xl hover:bg-white/5 transition-colors flex items-center">
+                                  <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center">
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                     {returnDate ? format(parseISO(returnDate), 'PPP') : <span className="text-muted-foreground">Select date</span>}
                                   </button>
@@ -417,22 +424,24 @@ export const BookingFlow: React.FC = () => {
 
                   {/* Driver Preference Card */}
                   {bookingType === 'rental' && (
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
-                      <h2 className="font-heading text-3xl font-bold text-white mb-8 border-b border-white/5 pb-4">Driver Preference</h2>
+                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 md:p-8">
+                      <h2 className="font-heading text-[30px] font-bold text-white mb-8 border-b border-white/5 pb-4">Driver Preference</h2>
                       <div className="grid md:grid-cols-2 gap-6">
                         <div 
                           onClick={() => setDriverRequired(true)}
-                          className={`p-6 rounded-2xl cursor-pointer transition-colors border ${driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(212,175,55,0.15)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
+                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border ${driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
                         >
-                          <h3 className="text-lg font-bold text-white mb-2">Chauffeur Driven</h3>
-                          <p className="text-xs md:text-sm text-muted-foreground">Relax while our professional, vetted chauffeur drives you to your destination.</p>
+                          {driverRequired && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={24} /></div>}
+                          <h3 className="text-[16px] font-bold text-white mb-2">Chauffeur Driven</h3>
+                          <p className="text-[13px] text-muted-foreground leading-relaxed pr-8">Relax while our professional, vetted chauffeur drives you to your destination.</p>
                         </div>
                         <div 
                           onClick={() => setDriverRequired(false)}
-                          className={`p-6 rounded-2xl cursor-pointer transition-colors border ${!driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(212,175,55,0.15)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
+                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border ${!driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
                         >
-                          <h3 className="text-lg font-bold text-white mb-2">Self Drive</h3>
-                          <p className="text-xs md:text-sm text-muted-foreground">Take the wheel yourself. Requires a valid premium driving license and deposit.</p>
+                          {!driverRequired && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={24} /></div>}
+                          <h3 className="text-[16px] font-bold text-white mb-2">Self Drive</h3>
+                          <p className="text-[13px] text-muted-foreground leading-relaxed pr-8">Take the wheel yourself. Requires a valid premium driving license and deposit.</p>
                         </div>
                       </div>
                     </div>
@@ -440,85 +449,101 @@ export const BookingFlow: React.FC = () => {
                 </div>
 
                 {/* Right Column: Sticky Booking Summary */}
-                <div className="sticky top-32 space-y-6">
-                  <div className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
-                    <h3 className="font-heading text-2xl text-white mb-6">Booking Summary</h3>
+                <div className="sticky top-24 lg:top-32 space-y-6 z-20">
+                  <details className="group bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden" open={window.innerWidth >= 1024}>
+                    <summary className="font-heading text-[22px] text-white p-6 md:p-8 cursor-pointer flex justify-between items-center list-none outline-none marker:hidden lg:cursor-default lg:pointer-events-none">
+                      Booking Summary
+                      <ChevronRight size={20} className="lg:hidden text-primary transition-transform group-open:rotate-90" />
+                    </summary>
                     
-                    {selectedCar && (
-                      <div className="mb-6">
-                        <div className="flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-xl p-4 h-40 mb-4">
-                          <img src={selectedCar.images?.[0] || getFallbackImage(selectedCar.brand, selectedCar.model)} alt={selectedCar.model} className="max-h-full object-contain filter drop-shadow-2xl scale-110" />
-                        </div>
-                        
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-heading font-bold text-2xl text-white">{selectedCar.brand} {selectedCar.model}</h4>
-                            <span className="inline-block px-2 py-1 mt-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded">Premium SUV</span>
+                    <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0">
+                      {selectedCar && (
+                        <div className="mb-6">
+                          <div className="flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-xl p-4 h-32 md:h-40 mb-4">
+                            <img src={selectedCar.images?.[0] || getFallbackImage(selectedCar.brand, selectedCar.model)} alt={selectedCar.model} className="w-[180px] object-contain filter drop-shadow-2xl" />
                           </div>
-                          <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-white text-xs font-bold">
-                            <span className="text-primary">★</span> 4.9
+                          
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-heading font-bold text-2xl text-white">{selectedCar.brand} {selectedCar.model}</h4>
+                              <span className="inline-block px-2 py-1 mt-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded">Premium SUV</span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-white text-[13px] font-bold">
+                              <span className="text-primary">★</span> 4.9
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-muted-foreground mt-4 mb-6">
+                            <span className="flex items-center gap-1.5"><Users size={14}/> {selectedCar.seats} Seats</span>
+                            <span className="flex items-center gap-1.5"><Flag size={14}/> {selectedCar.fuel_type}</span>
+                            <span className="flex items-center gap-1.5"><Settings size={14}/> {selectedCar.transmission}</span>
                           </div>
                         </div>
+                      )}
 
-                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground mt-4 mb-6">
-                          <span className="flex items-center gap-1.5"><Users size={14}/> {selectedCar.seats} Seats</span>
-                          <span className="flex items-center gap-1.5"><Flag size={14}/> {selectedCar.fuel_type}</span>
-                          <span className="flex items-center gap-1.5"><Settings size={14}/> {selectedCar.transmission}</span>
+                      <hr className="border-white/10 mb-6" />
+                      
+                      {selectedCar ? (
+                        <div className="space-y-3 mb-6">
+                          <div className="flex justify-between items-center text-[16px] text-muted-foreground">
+                            <span>Price</span>
+                            <span className="text-white font-bold">₹ {selectedCar.price_per_day}/day</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[16px] text-muted-foreground">
+                            <span>Taxes & Fees</span>
+                            <span className="text-white font-medium">Calculated next</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
-
-                    <hr className="border-white/10 mb-6" />
-                    
-                    {selectedCar ? (
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between items-center text-sm text-muted-foreground">
-                          <span>Price per day</span>
-                          <span className="text-white font-medium">₹ {selectedCar.price_per_day}</span>
+                      ) : (
+                        <div className="py-8 text-center text-sm text-muted-foreground">Loading vehicle details...</div>
+                      )}
+                      
+                      {/* Trust Signals */}
+                      <div className="flex flex-wrap gap-3 mt-4">
+                        <div className="flex items-center gap-2 text-[12px] bg-green-500/10 border border-green-500/20 rounded-full px-3 py-1.5 text-green-400 font-bold uppercase tracking-wider">
+                          <CheckCircle2 size={14} /> Free Cancellation
                         </div>
-                        <div className="flex justify-between items-center text-sm text-muted-foreground">
-                          <span>Taxes & Fees</span>
-                          <span className="text-white font-medium">Calculated next</span>
+                        <div className="flex items-center gap-2 text-[12px] bg-green-500/10 border border-green-500/20 rounded-full px-3 py-1.5 text-green-400 font-bold uppercase tracking-wider">
+                          <CheckCircle2 size={14} /> Instant Confirmation
                         </div>
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center text-sm text-muted-foreground">Loading vehicle details...</div>
-                    )}
-                    
-                    {/* Trust Signals */}
-                    <div className="bg-green-500/5 border border-green-500/10 rounded-lg p-4 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
-                        <CheckCircle2 size={14} /> Free Cancellation up to 24h
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
-                        <CheckCircle2 size={14} /> Instant Confirmation
                       </div>
                     </div>
-                  </div>
+                    <style>{`details > summary::-webkit-details-marker { display: none; }`}</style>
+                  </details>
                 </div>
                 
                 {/* Step 1 Footer Actions */}
-                <div className="fixed bottom-0 left-0 w-full p-6 bg-[#0a0a0a]/80 backdrop-blur-xl border-t border-white/10 flex justify-between items-center z-50">
-                  <div className="container max-w-[1120px] mx-auto flex justify-between items-center w-full px-4 md:px-8">
-                    <Button 
-                      variant="ghost" 
-                      onClick={currentStep === 1 ? () => navigate('/cars') : prevStep} 
-                      disabled={loadingPreview}
-                      className="text-muted-foreground hover:text-white disabled:opacity-50 transition-all hover:-translate-y-[1px] hover:bg-transparent"
-                    >
-                      <ChevronLeft className="mr-1" size={18} /> Back
-                    </Button>
-                    <Button 
-                      className="group bg-primary text-black px-8 h-12 rounded-full shadow-[0_0_15px_rgba(212,175,55,0.2)] font-semibold transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] disabled:opacity-50"
-                      onClick={nextStep}
-                      disabled={loadingPreview}
-                    >
-                      {loadingPreview ? (
-                        <><Loader2 className="animate-spin mr-2" size={20} /> Loading...</>
-                      ) : (
-                        <>Continue <ChevronRight className="ml-1 transition-transform group-hover:translate-x-1" size={18} /></>
-                      )}
-                    </Button>
+                <div className="fixed bottom-0 inset-x-0 p-4 md:p-6 bg-[#0a0a0a]/95 backdrop-blur-2xl border-t border-white/10 z-50 pb-[max(env(safe-area-inset-bottom,20px),20px)] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+                  <div className="container max-w-[1120px] mx-auto flex justify-between items-center gap-4 px-2 md:px-8">
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase mb-0.5">Total Price</span>
+                      <span className="text-white font-heading font-bold text-2xl">
+                        {selectedCar ? `₹${selectedCar.price_per_day}` : '...'}
+                        <span className="text-sm font-normal text-muted-foreground">/day</span>
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        onClick={currentStep === 1 ? () => navigate('/cars') : prevStep} 
+                        disabled={loadingPreview}
+                        className="hidden md:flex text-muted-foreground hover:text-white disabled:opacity-50 transition-all hover:-translate-y-[1px] hover:bg-transparent px-4"
+                      >
+                        <ChevronLeft className="mr-1" size={18} /> Back
+                      </Button>
+                      <Button 
+                        className="group bg-primary text-black px-8 h-14 rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.25)] font-bold text-[16px] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] disabled:opacity-50"
+                        onClick={nextStep}
+                        disabled={loadingPreview}
+                      >
+                        {loadingPreview ? (
+                          <><Loader2 className="animate-spin mr-2" size={20} /> Loading...</>
+                        ) : (
+                          <>Continue <ChevronRight className="ml-2 transition-transform group-hover:translate-x-1" size={18} /></>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -528,83 +553,89 @@ export const BookingFlow: React.FC = () => {
               <motion.div 
                 key="step2"
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                className="grid lg:grid-cols-[1fr_380px] gap-10 items-start bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-10 md:p-12 pb-32 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                className="grid lg:grid-cols-[1fr_380px] gap-8 items-start bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 md:p-8 pb-32 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
               >
                 {/* Left Column: Details & Forms */}
-                <div className="space-y-12">
+                <div className="space-y-6">
                   
                   {/* Car Details Section */}
-                  <div>
-                    <div className="flex items-end justify-between mb-6">
-                      <h2 className="font-heading text-3xl text-white">Review & Checkout</h2>
-                    </div>
-                    
-                    <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-                      <div className="w-full md:w-64 h-48 flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-2xl p-4">
-                        <img src={selectedCar?.images?.[0] || (selectedCar ? getFallbackImage(selectedCar.brand, selectedCar.model) : "https://freepngimg.com/thumb/car/3-2-car-free-download-png.png")} alt="Car preview" className="max-h-full object-contain filter drop-shadow-2xl scale-110" />
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                      <div className="w-full md:w-auto h-32 flex-shrink-0 flex items-center justify-center">
+                        <img src={selectedCar?.images?.[0] || (selectedCar ? getFallbackImage(selectedCar.brand, selectedCar.model) : "https://freepngimg.com/thumb/car/3-2-car-free-download-png.png")} alt="Car preview" className="w-[140px] md:w-[160px] object-contain filter drop-shadow-2xl" />
                       </div>
                       
-                      <div className="flex-1 w-full pt-2">
-                        <div className="mb-4">
-                          <h3 className="text-3xl font-heading font-bold text-white tracking-wide mb-1">Vehicle - {carNumber}</h3>
-                          <p className="text-primary text-sm font-semibold tracking-wider uppercase">Luxury Class</p>
+                      <div className="flex-1 w-full pt-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <div>
+                            <h3 className="text-2xl font-heading font-bold text-white tracking-wide mb-1">{selectedCar?.brand} {selectedCar?.model}</h3>
+                            <p className="text-primary text-xs font-semibold tracking-wider uppercase">Luxury Class</p>
+                          </div>
+                          <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-white text-[12px] font-bold">
+                            <span className="text-primary">★</span> 4.9
+                          </div>
                         </div>
                         
                         {/* Minimal Specs */}
-                        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground mb-6">
-                          <div className="flex items-center gap-2"><Users size={16} className="text-white/60" /> 4 Seats</div>
-                          <div className="flex items-center gap-2"><Settings size={16} className="text-white/60" /> Auto</div>
-                          <div className="flex items-center gap-2"><Briefcase size={16} className="text-white/60" /> 2 Luggage</div>
-                          <div className="flex items-center gap-2"><Navigation size={16} className="text-white/60" /> Unlimited Mileage</div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground mt-3">
+                          <div className="flex items-center gap-1.5"><Users size={14} className="text-white/60" /> {selectedCar?.seats} Seats</div>
+                          <div className="flex items-center gap-1.5"><Settings size={14} className="text-white/60" /> {selectedCar?.transmission}</div>
+                          <div className="flex items-center gap-1.5"><Flag size={14} className="text-white/60" /> {selectedCar?.fuel_type}</div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Included Benefits Chips */}
-                    <div className="flex flex-wrap gap-3 mt-6">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold">
-                        <CheckCircle2 size={14} /> Free Cancellation
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-xs font-semibold">
-                        <CheckCircle2 size={14} className="text-primary" /> Damage Waiver
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-xs font-semibold">
-                        <CheckCircle2 size={14} className="text-primary" /> Instant Confirmation
+                        {/* Included Benefits Chips */}
+                        <div className="flex flex-wrap gap-2.5 mt-4">
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 text-[11px] font-semibold">
+                            <CheckCircle2 size={12} /> Free Cancellation
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-white/80 text-[11px] font-semibold">
+                            <CheckCircle2 size={12} className="text-primary" /> Damage Waiver
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Billing Profile Summary */}
-                  <div>
-                    <h3 className="font-heading text-2xl text-white mb-6">Billing Profile</h3>
-                    <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                          <Users size={24} className="text-primary" />
+                  <details className="group bg-white/[0.02] border border-white/10 rounded-2xl transition-all duration-300">
+                    <summary className="flex justify-between items-center p-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden select-none">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-heading text-xl text-white">Billing Profile</h3>
+                        <ChevronRight size={16} className="text-white/40 transition-transform group-open:rotate-90" />
+                      </div>
+                      <button className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                        <Edit2 size={12} /> Edit
+                      </button>
+                    </summary>
+                    
+                    <div className="px-5 pb-5 pt-1 border-t border-white/5 animate-in slide-in-from-top-2 fade-in duration-300">
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Users size={18} className="text-primary" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-white text-lg">{user?.name || 'Verified Customer'}</h4>
-                          <p className="text-sm text-primary">{user?.role === 'ADMIN' ? 'Administrator Account' : 'Premium Member Account'}</p>
+                          <h4 className="font-bold text-white text-base">{user?.name || 'Verified Customer'}</h4>
+                          <p className="text-xs text-primary">{user?.role === 'ADMIN' ? 'Administrator Account' : 'Premium Member Account'}</p>
                         </div>
                       </div>
                       
-                      <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Email</p>
-                          <p className="text-white font-medium">{user?.email || 'Not Provided'}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Email</p>
+                          <p className="text-sm text-white font-medium">{user?.email || 'Not Provided'}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Phone Number</p>
-                          <p className="text-white font-medium">{user?.phone || 'Not Provided'}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Phone Number</p>
+                          <p className="text-sm text-white font-medium">{user?.phone || 'Not Provided'}</p>
                         </div>
                       </div>
-                      
+                        
                       <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-sm text-muted-foreground">
                         <ShieldCheck size={16} className="text-green-400" />
                         Using your verified primary profile details for this booking.
                       </div>
                     </div>
-                  </div>
+                  </details>
 
                   {/* Payment Method */}
                   <div>
@@ -612,53 +643,57 @@ export const BookingFlow: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div 
                         onClick={() => setPaymentMethod('card')}
-                        className={`p-5 rounded-2xl cursor-pointer transition-all border ${paymentMethod === 'card' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(212,175,55,0.15)]' : 'bg-white/[0.02] border-white/10 hover:border-white/30'}`}
+                        className={`relative p-4 rounded-xl flex items-center gap-4 cursor-pointer transition-all duration-300 border ${paymentMethod === 'card' ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30'}`}
                       >
-                        <CreditCard size={24} className={`mb-3 ${paymentMethod === 'card' ? 'text-primary' : 'text-white/60'}`} />
-                        <h4 className="font-bold text-white mb-1">Credit / Debit Card</h4>
-                        <p className="text-xs text-muted-foreground">Pay securely with card</p>
+                        {paymentMethod === 'card' && <div className="absolute top-1/2 -translate-y-1/2 right-4 text-primary"><CheckCircle2 size={18} /></div>}
+                        <CreditCard size={28} className={`${paymentMethod === 'card' ? 'text-primary' : 'text-white/60'}`} />
+                        <div>
+                          <h4 className="font-bold text-white text-sm mb-0.5">Credit / Debit Card</h4>
+                          <p className="text-[11px] text-muted-foreground">Pay securely with card</p>
+                        </div>
                       </div>
                       <div 
                         onClick={() => setPaymentMethod('upi')}
-                        className={`p-5 rounded-2xl cursor-pointer transition-all border ${paymentMethod === 'upi' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(212,175,55,0.15)]' : 'bg-white/[0.02] border-white/10 hover:border-white/30'}`}
+                        className={`relative p-4 rounded-xl flex items-center gap-4 cursor-pointer transition-all duration-300 border ${paymentMethod === 'upi' ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'bg-black/40 border-white/10 hover:border-white/30'}`}
                       >
-                        <div className={`w-6 h-6 mb-3 font-bold text-lg leading-none ${paymentMethod === 'upi' ? 'text-primary' : 'text-white/60'}`}>UPI</div>
-                        <h4 className="font-bold text-white mb-1">UPI</h4>
-                        <p className="text-xs text-muted-foreground">GPay, PhonePe, Paytm</p>
+                        {paymentMethod === 'upi' && <div className="absolute top-1/2 -translate-y-1/2 right-4 text-primary"><CheckCircle2 size={18} /></div>}
+                        <div className={`w-7 flex items-center justify-center font-bold text-lg leading-none ${paymentMethod === 'upi' ? 'text-primary' : 'text-white/60'}`}>UPI</div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm mb-0.5">UPI</h4>
+                          <p className="text-[11px] text-muted-foreground">GPay, PhonePe, Paytm</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="pb-12" /> {/* Bottom Spacing */}
                 </div>
 
                 {/* Right Column: Sticky Summary */}
-                <div className="sticky top-32 space-y-6">
+                <div className="sticky top-32 space-y-6 pb-28 md:pb-32">
                   
                   {/* Price Summary */}
-                  <div className="bg-black/60 backdrop-blur-xl border border-primary/30 rounded-3xl p-8 shadow-[0_0_40px_rgba(212,175,55,0.08)] relative overflow-hidden">
+                  <div className="bg-black/60 backdrop-blur-xl border border-primary/30 rounded-3xl p-5 md:p-6 shadow-[0_0_40px_rgba(212,175,55,0.08)] relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-[60px] -z-10" />
                     
-                    <h4 className="font-heading text-2xl text-white mb-8">Price Summary</h4>
+                    <h4 className="font-heading text-2xl text-white mb-6">Price Summary</h4>
                     
                     {/* Itinerary Summary inside Price Card for cohesion */}
-                    <div className="mb-8 space-y-6">
-                      <div className="flex gap-4">
-                        <MapPin className="text-primary shrink-0" size={20} />
+                    <div className="mb-6 flex flex-row justify-between gap-4">
+                      <div className="flex gap-3">
+                        <MapPin className="text-primary shrink-0" size={18} />
                         <div>
-                          <p className="text-sm text-muted-foreground mb-1">Pick-up</p>
-                          <p className="text-sm font-semibold text-white">{pickupDate || 'Tomorrow'}</p>
-                          <p className="text-xs text-white/60">Gachibowli, HQ</p>
+                          <p className="text-[11px] text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">Pick-up</p>
+                          <p className="text-sm font-bold text-white">{pickupDate || 'Tomorrow'}</p>
+                          <p className="text-[11px] text-white/50">Gachibowli, HQ</p>
                         </div>
                       </div>
                       
                       {bookingType === 'rental' && (
-                        <div className="flex gap-4">
-                          <Flag className="text-primary shrink-0" size={20} />
+                        <div className="flex gap-3">
+                          <Flag className="text-primary shrink-0" size={18} />
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Drop-off</p>
-                            <p className="text-sm font-semibold text-white">{returnDate || 'Next Sunday'}</p>
-                            <p className="text-xs text-white/60">Gachibowli, HQ</p>
+                            <p className="text-[11px] text-muted-foreground mb-0.5 uppercase tracking-wider font-semibold">Drop-off</p>
+                            <p className="text-sm font-bold text-white">{returnDate || 'Next Sunday'}</p>
+                            <p className="text-[11px] text-white/50">Gachibowli, HQ</p>
                           </div>
                         </div>
                       )}
@@ -668,7 +703,7 @@ export const BookingFlow: React.FC = () => {
 
                     {previewData ? (
                       <>
-                        <div className="space-y-4 text-sm mb-6">
+                        <div className="space-y-6 text-sm mb-6">
                           <div className="flex justify-between items-center text-muted-foreground">
                             <span>Rental fee ({previewData.num_days} days)</span>
                             <span className="text-white">₹{previewData.car_price.toLocaleString()}</span>
@@ -689,9 +724,9 @@ export const BookingFlow: React.FC = () => {
 
                         <hr className="border-white/10 my-6" />
                         
-                        <div className="flex flex-col mb-8">
+                        <div className="flex flex-col mb-4">
                           <span className="block text-sm text-muted-foreground mb-2 uppercase tracking-wider font-semibold">Total Amount</span>
-                          <span className="text-4xl font-heading font-bold text-primary">
+                          <span className="text-[36px] md:text-[40px] font-heading font-bold text-primary leading-none">
                             ₹{(previewData.total_amount - (previewData.total_amount * discountPercentage) / 100).toLocaleString()}
                           </span>
                         </div>
@@ -702,55 +737,68 @@ export const BookingFlow: React.FC = () => {
                       </div>
                     )}
 
-                    <div className="flex items-start gap-3 mb-8">
-                      <input type="checkbox" id="terms" className="mt-1 w-4 h-4 rounded border-white/20 bg-black/50 checked:bg-primary checked:border-primary focus:ring-primary focus:ring-offset-background" />
-                      <label htmlFor="terms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
-                        I understand & agree with the <span className="text-primary hover:underline">Terms & Conditions</span> and cancellation policy.
-                      </label>
-                    </div>
-
-                    <div className="flex flex-col xl:flex-row gap-3">
-                      <Button 
-                        variant="ghost" 
-                        onClick={prevStep} 
-                        disabled={confirmingBooking}
-                        className="h-14 flex-1 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                      >
-                        <ChevronLeft className="mr-1" size={18} /> Back
-                      </Button>
-                      <Button 
-                        className="h-14 flex-[2] bg-primary text-black font-bold text-lg rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.5)] transition-all hover:-translate-y-[2px] disabled:opacity-50" 
-                        onClick={handleConfirmBooking}
-                        disabled={confirmingBooking}
-                      >
-                        {confirmingBooking ? (
-                          <><Loader2 className="animate-spin mr-2" size={20} /> Processing...</>
-                        ) : (
-                          'Book Now'
-                        )}
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 mt-4 text-[11px] text-white/40 uppercase tracking-widest font-semibold">
-                      <Lock size={12} /> Secure Checkout
-                    </div>
+                    <label className="flex items-start gap-3 mt-8 mb-2 p-4 rounded-xl border border-white/10 bg-white/5 cursor-pointer transition-colors hover:bg-white/10">
+                      <input type="checkbox" id="terms" className="mt-1 w-5 h-5 rounded border-white/20 bg-black/50 checked:bg-primary checked:border-primary focus:ring-primary focus:ring-offset-background shrink-0" />
+                      <span className="text-[14px] text-white leading-relaxed">
+                        I agree to the <span className="text-primary hover:underline">Terms & Conditions</span> and cancellation policy.
+                        <span className="block text-xs text-muted-foreground mt-1">Required before payment</span>
+                      </span>
+                    </label>
                   </div>
 
                   {/* Trust Signals */}
-                  <div className="grid grid-cols-2 gap-4 px-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Shield size={16} className="text-white/60" /> Secure Payment
+                  <div className="flex flex-wrap gap-2 px-1">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/70 font-bold uppercase tracking-wider">
+                      <Shield size={12} className="text-primary" /> Secure
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <HelpCircle size={16} className="text-white/60" /> 24/7 Support
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/70 font-bold uppercase tracking-wider">
+                      <CheckCircle2 size={12} className="text-primary" /> No Hidden Fees
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 size={16} className="text-white/60" /> No Hidden Fees
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CreditCard size={16} className="text-white/60" /> Flexible Options
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/70 font-bold uppercase tracking-wider">
+                      <HelpCircle size={12} className="text-primary" /> 24/7
                     </div>
                   </div>
 
+                </div>
+                
+                {/* Step 2 Footer Actions */}
+                <div className="fixed bottom-0 inset-x-0 p-4 md:p-6 bg-[#0a0a0a]/95 backdrop-blur-2xl border-t border-white/10 z-50 pb-[max(env(safe-area-inset-bottom,20px),20px)] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+                  <div className="container max-w-[1120px] mx-auto">
+                    <div className="flex items-center justify-center gap-2 text-[12px] text-green-400 font-medium mb-4 text-center">
+                      <ShieldCheck size={14} />
+                      Your payment is encrypted and secure. You won't be charged until confirmed.
+                    </div>
+                    <div className="flex justify-between items-center gap-4 px-2 md:px-8">
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase mb-0.5">Total Amount</span>
+                        <span className="text-white font-heading font-bold text-2xl">
+                          {previewData ? `₹${(previewData.total_amount - (previewData.total_amount * discountPercentage) / 100).toLocaleString()}` : '...'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <Button 
+                          variant="ghost" 
+                          onClick={prevStep} 
+                          disabled={confirmingBooking}
+                          className="hidden md:flex text-muted-foreground hover:text-white disabled:opacity-50 transition-all hover:-translate-y-[1px] hover:bg-transparent px-4"
+                        >
+                          <ChevronLeft className="mr-1" size={18} /> Back
+                        </Button>
+                        <Button 
+                          className="group bg-primary text-black px-8 h-14 rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.25)] font-bold text-[16px] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] disabled:opacity-50"
+                          onClick={handleConfirmBooking}
+                          disabled={confirmingBooking}
+                        >
+                          {confirmingBooking ? (
+                            <><Loader2 className="animate-spin mr-2" size={20} /> Processing...</>
+                          ) : (
+                            'Book Now'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -758,24 +806,77 @@ export const BookingFlow: React.FC = () => {
             {currentStep === 3 && (
               <motion.div 
                 key="step3"
-                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-2xl mx-auto"
               >
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mb-8 text-primary relative">
-                  <div className="absolute inset-0 border-2 border-primary rounded-full animate-ping opacity-20" />
-                  <CheckCircle2 size={48} />
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 text-primary relative">
+                    <div className="absolute inset-0 border-2 border-primary rounded-full animate-ping opacity-20 duration-1000" />
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+                    >
+                      <CheckCircle2 size={40} className="stroke-[3]" />
+                    </motion.div>
+                  </div>
+                  <h2 className="font-heading font-bold text-3xl md:text-4xl text-white mb-2">Booking Confirmed</h2>
+                  <p className="text-primary font-medium tracking-wide">#{Math.random().toString(36).substr(2, 6).toUpperCase()}-24</p>
                 </div>
-                <h2 className="font-heading font-bold text-4xl text-white mb-4">Booking Confirmed!</h2>
-                <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                  Your luxury vehicle has been reserved successfully. Booking ID: <strong className="text-white">#LD-789456</strong>
-                </p>
-                <div className="flex items-center gap-4">
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 px-6 h-12 rounded-full">
+
+                {/* Booking Summary Card */}
+                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 mb-8 text-left">
+                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+                    <div className="w-20 h-12 relative rounded-md flex items-center justify-center bg-black/40 border border-white/10 px-1">
+                      <img 
+                        src={selectedCar?.images?.[0] || (selectedCar ? getFallbackImage(selectedCar.brand, selectedCar.model) : "https://freepngimg.com/thumb/car/3-2-car-free-download-png.png")} 
+                        alt="Vehicle" 
+                        className="w-full h-full object-contain filter drop-shadow-lg" 
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-lg">{selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : (previewData?.vehicle?.name || 'Luxury Vehicle')}</h4>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{selectedCar?.category || previewData?.vehicle?.category || 'Premium Class'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Pickup Date</p>
+                      <p className="text-sm font-semibold text-white">{pickupDate || 'Tomorrow'}</p>
+                      <p className="text-[11px] text-white/50 mt-0.5">09:00 AM</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Location</p>
+                      <p className="text-sm font-semibold text-white">Gachibowli</p>
+                      <p className="text-[11px] text-white/50 mt-0.5">Headquarters</p>
+                    </div>
+                    <div className="col-span-2 md:col-span-2">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Driver Status</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                        <p className="text-sm font-semibold text-yellow-500">Assigning Driver...</p>
+                      </div>
+                      <p className="text-[11px] text-white/50 mt-0.5">You will be notified shortly</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+                  <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 px-8 h-12 rounded-xl">
                     <Download className="mr-2" size={18} /> Download Invoice
                   </Button>
-                  <Button onClick={() => navigate('/profile')} className="bg-primary text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] px-8 h-12 rounded-full font-bold transition-all">
-                    Go to Dashboard
+                  <Button onClick={() => navigate('/profile')} className="w-full sm:w-auto bg-primary text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] px-10 h-12 rounded-xl font-bold transition-all">
+                    <Users className="mr-2" size={18} /> Back to Dashboard
                   </Button>
+                </div>
+
+                {/* Footer Trust Signals */}
+                <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-muted-foreground border-t border-white/10 pt-6">
+                  <span className="flex items-center gap-1.5"><Shield size={14} className="text-primary" /> Secure Booking</span>
+                  <span className="hidden sm:block">•</span>
+                  <span className="flex items-center gap-1.5"><HelpCircle size={14} className="text-primary" /> 24/7 Support</span>
                 </div>
               </motion.div>
             )}

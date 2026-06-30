@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Users, Search, CheckCircle2, ArrowRight, ChevronDown, Star } from 'lucide-react';
+import { MapPin, Calendar, Users, Search, CheckCircle2, ArrowRight, ChevronDown, Star, CarFront, BadgeCheck, Headset, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import bgImage from '@/assets/bg.png';
 import starImage from '@/assets/star.png';
@@ -24,19 +24,20 @@ const staggerContainer: any = {
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [pickupLocation, setPickupLocation] = useState('Hyderabad, IN');
-  const [dropLocation, setDropLocation] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
+  
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const testimonials = [
+    { text: "Excellent service. Driver was punctual and the car was immaculate.", author: "Rahul, Hyderabad", rating: 5 },
+    { text: "A truly luxury experience. Will definitely book again for my next business trip.", author: "Priya, Bangalore", rating: 5 },
+    { text: "Transparent pricing and premium fleet. The best travel service I've used.", author: "Amit, Mumbai", rating: 5 }
+  ];
 
-  const handleSearch = () => {
-    navigate(`/book?type=rental&pickup=${pickupDate}&return=${returnDate}`);
-  };
   return (
     <div className="bg-background min-h-screen font-sans">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-20 md:pt-24 pb-12 overflow-hidden">
+      <section className="relative min-h-[100svh] flex items-center pt-20 md:pt-24 pb-12 overflow-hidden">
         {/* Cinematic Background Image & Gradient */}
         <motion.div
           initial={{ scale: 1.05 }}
@@ -45,17 +46,13 @@ export const Home: React.FC = () => {
           className="absolute inset-0 z-0 bg-cover bg-[75%_center] md:bg-center"
           style={{ backgroundImage: `url(${bgImage})` }}
         />
-        {/* Fog/Vignette Overlays - Lightened for better car visibility */}
+        {/* Fog/Vignette Overlays */}
         <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] md:via-black/40 to-transparent" />
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/10" />
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent md:hidden" />
         <div className="absolute inset-0 z-0 bg-black/10 md:bg-black/10" />
 
-
-
-
-        <div className="container relative z-10 grid lg:grid-cols-12 gap-12 items-center">
-
+        <div className="container px-6 md:px-8 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -77,18 +74,18 @@ export const Home: React.FC = () => {
               Experience seamless airport transfers, outstation journeys, corporate travel, and premium chauffeur services with Vibe Travels. Every ride is designed for comfort, reliability, and elegance.
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="flex flex-col md:flex-row gap-4 items-start md:items-center max-w-[320px] md:max-w-none">
-              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 hover:shadow-[0_20px_40px_rgba(212,175,55,0.3)] hover:-translate-y-1 font-bold px-8 h-14 w-[240px] md:w-auto rounded-full transition-all duration-300 group">
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center max-w-[320px] sm:max-w-none">
+              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 hover:shadow-[0_20px_40px_rgba(212,175,55,0.3)] hover:-translate-y-1 font-bold px-8 h-14 w-[260px] sm:w-auto rounded-full transition-all duration-300 group">
                 Book Your Ride <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-white hover:text-primary bg-white/5 border border-white/10 hover:bg-white/10 h-14 px-6 w-[240px] md:w-auto rounded-full font-medium transition-colors group relative overflow-hidden">
+              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-white hover:text-primary bg-white/5 border border-white/10 hover:bg-white/10 h-14 px-6 w-[260px] sm:w-auto rounded-full font-medium transition-colors group relative overflow-hidden">
                 View Fleet
                 <div className="absolute bottom-3 left-6 right-6 h-px bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 <ArrowRight className="ml-2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </Button>
             </motion.div>
-
-            <motion.div variants={fadeInUp} className="mt-8 md:mt-12 flex flex-col md:flex-row items-start md:items-center gap-4">
+            
+            <motion.div variants={fadeInUp} className="mt-12 flex flex-col items-start gap-4">
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden">
@@ -97,16 +94,15 @@ export const Home: React.FC = () => {
                 ))}
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center text-primary mb-0.5">
+                <div className="flex items-center text-primary mb-1">
                   {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
                   <span className="text-white font-bold text-sm ml-2">4.9</span>
                 </div>
                 <span className="text-xs text-white/50">Trusted by 12,000+ Customers</span>
               </div>
             </motion.div>
+
           </motion.div>
-
-
         </div>
 
         {/* Scroll Indicator */}
@@ -122,100 +118,135 @@ export const Home: React.FC = () => {
             <ChevronDown size={20} />
           </motion.div>
         </motion.div>
+
       </section>
 
 
-      {/* Stats Section */}
-      <section className="py-16 border-y border-white/5 bg-white/[0.02]">
-        <div className="container">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-x divide-white/5 text-center">
+      {/* Why Choose Us */}
+      <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.01]">
+        <div className="container px-6 md:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="font-heading font-medium text-3xl md:text-4xl text-white mb-4">Why <span className="text-primary">Vibe Travels</span></h2>
+            <p className="text-muted-foreground text-base md:text-lg">We don't just rent cars; we provide a premium lifestyle experience.</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[
-              { num: "500+", label: "Available Cars" },
-              { num: "25K+", label: "Happy Customers" },
-              { num: "100+", label: "Professional Drivers" },
-              { num: "24/7", label: "Customer Support" }
-            ].map((stat, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className="font-heading font-bold text-4xl text-primary mb-2">{stat.num}</span>
-                <span className="text-sm text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
-              </div>
+              { icon: <CarFront size={20} className="text-primary" />, title: "Luxury Fleet", desc: "Top-tier vehicles from world-class brands." },
+              { icon: <BadgeCheck size={20} className="text-primary" />, title: "Verified Drivers", desc: "Professional, vetted, and courteous chauffeurs." },
+              { icon: <Headset size={20} className="text-primary" />, title: "24/7 Support", desc: "Round the clock support for your peace of mind." },
+              { icon: <IndianRupee size={20} className="text-primary" />, title: "Transparent Pricing", desc: "No hidden charges, pure premium value." }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.6 }}
+                className="glass-panel p-6 rounded-2xl border-white/5 hover:border-primary/30 transition-colors group flex flex-col items-center text-center md:items-start md:text-left"
+              >
+                <div className="w-12 h-12 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                  {feature.icon}
+                </div>
+                <h3 className="font-heading font-bold text-lg text-white mb-2">{feature.title}</h3>
+                <p className="text-base text-muted-foreground">{feature.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="py-16 md:py-24 border-t border-white/5 bg-[#0a0a0a]">
+        <div className="container px-6 md:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="font-heading font-bold text-3xl md:text-4xl text-white mb-4">How It <span className="text-primary">Works</span></h2>
+            <p className="text-muted-foreground text-base md:text-lg">Your dream ride is just a few clicks away.</p>
+          </motion.div>
 
-
-      {/* Why Choose Us & How It Works */}
-      <section className="py-24 border-t border-white/5 bg-white/[0.01]">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-16">
-
-            {/* Why Choose Us */}
-            <div>
-              <h2 className="font-heading font-medium text-4xl text-white mb-4">Why <span className="text-primary">Vibe Travels</span></h2>
-              <p className="text-muted-foreground mb-12">We don&apos;t just rent cars; we provide a premium lifestyle experience.</p>
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                {[
-                  { title: "Luxury Fleet", desc: "Top-tier vehicles from world-class brands." },
-                  { title: "Verified Drivers", desc: "Professional, vetted, and courteous chauffeurs." },
-                  { title: "24/7 Assistance", desc: "Round the clock support for your peace of mind." },
-                  { title: "Transparent Pricing", desc: "No hidden charges, pure premium value." }
-                ].map((feature, i) => (
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            {[
+              { step: "①", title: "Choose Car" },
+              { step: "②", title: "Select Date" },
+              { step: "③", title: "Secure Payment" },
+              { step: "④", title: "Enjoy Ride" }
+            ].map((item, i) => (
+              <React.Fragment key={i}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="w-full md:w-48 p-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-3 hover:border-primary/50 transition-colors"
+                >
+                  <span className="text-xl text-primary">{item.step}</span>
+                  <span className="font-bold text-white text-sm md:text-base">{item.title}</span>
+                </motion.div>
+                {i < 3 && (
                   <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.6 }}
-                    className="glass-panel p-6 rounded-2xl border-white/5 hover:border-primary/30 transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 size={24} className="text-primary" />
-                    </div>
-                    <h3 className="font-heading font-bold text-lg text-white mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* How It Works */}
-            <div className="relative">
-              <h2 className="font-heading font-bold text-4xl text-white mb-4">How It <span className="text-primary">Works</span></h2>
-              <p className="text-muted-foreground mb-12">Your dream ride is just a few clicks away.</p>
-
-              <div className="space-y-8 relative before:absolute before:inset-0 before:ml-[19px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary before:via-primary/20 before:to-transparent">
-                {[
-                  { step: "1", title: "Choose Your Car", desc: "Select from our premium fleet." },
-                  { step: "2", title: "Select Dates & Location", desc: "Tell us when and where." },
-                  { step: "3", title: "Confirm & Pay", desc: "Secure payment gateway." },
-                  { step: "4", title: "Enjoy the Ride", desc: "Experience pure luxury." }
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.6 }}
-                    className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
-                  >
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-background text-muted-foreground font-bold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 group-hover:border-primary group-hover:text-primary transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10">
-                      {item.step}
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] glass-panel p-4 rounded-xl">
-                      <h4 className="font-heading font-bold text-white mb-1">{item.title}</h4>
-                      <p className="text-sm text-muted-foreground">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
+                    transition={{ delay: i * 0.1 + 0.1 }}
+                    className="w-px h-6 bg-primary/40 md:w-8 md:h-px my-1 md:my-0"
+                  />
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.02]">
+        <div className="container px-6 md:px-8 max-w-3xl text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-8"
+          >
+            <div className="flex justify-center gap-1 mb-6 text-primary">
+              {[1, 2, 3, 4, 5].map(i => <Star key={i} size={20} fill="currentColor" />)}
+            </div>
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTestimonial}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="min-h-[160px] py-4"
+              >
+                <p className="text-xl md:text-2xl text-white font-medium italic mb-8 leading-relaxed">"{testimonials[activeTestimonial].text}"</p>
+                <p className="text-base text-primary uppercase tracking-widest font-bold">— {testimonials[activeTestimonial].author}</p>
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="flex justify-center gap-2 mt-8">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveTestimonial(i)}
+                  className={`w-2 h-2 rounded-full transition-all ${i === activeTestimonial ? 'bg-primary w-6' : 'bg-white/20'}`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
 
     </div>
   );
