@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://real-cows-pay.loca.lt';
 
 /**
  * A fetch wrapper for authenticated requests.
