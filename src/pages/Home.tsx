@@ -43,14 +43,15 @@ export const Home: React.FC = () => {
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0 bg-cover bg-[75%_center] md:bg-center"
-          style={{ backgroundImage: `url(${bgImage})` }}
+          className="absolute inset-0 z-0 bg-cover bg-[85%_center] md:bg-[85%_center]"
+          style={{ 
+            backgroundImage: `url(${bgImage})`
+          }}
         />
+        
         {/* Fog/Vignette Overlays */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] md:via-black/40 to-transparent" />
-        <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/10" />
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent md:hidden" />
-        <div className="absolute inset-0 z-0 bg-black/10 md:bg-black/10" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-transparent" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
 
         <div className="container px-6 md:px-8 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
           <motion.div

@@ -1,4 +1,22 @@
-const BASE_URL = 'https://tangy-sides-grin.loca.lt';
+const BASE_URL = 'http://localhost:8000';
+
+/**
+ * A fetch wrapper for authenticated requests.
+ * If the server returns a 401 (token expired / invalid), it automatically
+ * clears localStorage so the next page load / auth check logs the user out.
+ */
+const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    // Token is invalid or expired on the backend — clear local session
+    localStorage.removeItem('auth_token');
+    // Optionally redirect to login if not already there
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
+    }
+  }
+  return response;
+};
 
 export interface User {
   id: number;
@@ -126,7 +144,7 @@ export const api = {
   },
 
   getAllCars: async (token: string): Promise<Car[]> => {
-    const response = await fetch(`${BASE_URL}/admin/all/cars`, {
+    const response = await authFetch(`${BASE_URL}/admin/all/cars`, {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -156,7 +174,7 @@ export const api = {
       end_date: params.end_date,
       driver_required: params.driver_required.toString()
     });
-    const response = await fetch(`${BASE_URL}/bookings/rental/preview?${queryParams.toString()}`, {
+    const response = await authFetch(`${BASE_URL}/bookings/rental/preview?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -180,7 +198,7 @@ export const api = {
   },
 
   confirmRentalBooking: async (token: string, carNumber: string, payload: any): Promise<any> => {
-    const response = await fetch(`${BASE_URL}/bookings/rental/confirm?car_number=${carNumber}`, {
+    const response = await authFetch(`${BASE_URL}/bookings/rental/confirm?car_number=${carNumber}`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',

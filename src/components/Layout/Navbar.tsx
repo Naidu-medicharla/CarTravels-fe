@@ -93,9 +93,6 @@ export const Navbar: React.FC = () => {
                   <Link to="/profile#bookings" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
                     <History size={16} className="text-primary" /> Bookings
                   </Link>
-                  <Link to="/profile#settings" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                    <Settings size={16} className="text-primary" /> Settings
-                  </Link>
                   <div className="h-px bg-white/10 my-2" />
                   <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
                     <LogOut size={16} /> Logout
@@ -105,7 +102,7 @@ export const Navbar: React.FC = () => {
             ) : (
               <>
                 <Link to="/login"><Button variant="ghost" className="text-white hover:text-primary hover:bg-white/5">Login</Button></Link>
-                <Link to="/login"><Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-black">Register</Button></Link>
+                <Link to="/login?mode=register"><Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-black">Register</Button></Link>
               </>
             )}
           </div>
@@ -117,101 +114,77 @@ export const Navbar: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Drawer (Moved outside <nav> to fix backdrop-filter bug) */}
+      {/* Fullscreen Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000]"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-[300px] bg-[#0a0a0a] z-[1001] p-6 flex flex-col border-l border-white/10 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-12">
-                <span className="font-heading font-medium text-2xl text-white">Vibe Travels</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-white">
-                  <X size={24} />
-                </button>
-              </div>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 h-screen w-screen bg-[#050505] z-[1000] flex flex-col overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 md:p-8">
+              <span className="font-heading font-bold text-3xl text-primary tracking-wide uppercase">VIBE</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-primary transition-colors">
+                <X size={32} strokeWidth={1.5} />
+              </button>
+            </div>
 
-              <div className="flex flex-col gap-5 flex-grow mt-4">
-                {isLoggedIn ? (
-                  <>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Account</div>
-                    {[
-                      { name: 'Home', path: '/' },
-                      { name: 'My Bookings', path: '/profile#bookings' },
-                      { name: 'Profile', path: '/profile' },
-                      { name: 'Addresses', path: '/profile#addresses' },
-                      { name: 'Payments', path: '/profile#payments' },
-                      { name: 'Support', path: '/profile#support' },
-                      { name: 'Settings', path: '/profile#settings' }
-                    ].map((link) => (
-                      <Link
-                        key={link.name}
-                        to={link.path}
-                        className="text-base font-medium text-white hover:text-primary transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {link.name}
-                      </Link>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Navigation</div>
-                    {navLinks.map((link) => (
-                      <Link
-                        key={link.name}
-                        to={link.path}
-                        className="text-base font-medium text-white hover:text-primary transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {link.name}
-                      </Link>
-                    ))}
-                  </>
-                )}
-              </div>
+            {/* Links Centered */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-8 min-h-[min-content] py-12">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 + 0.1, duration: 0.4 }}
+                >
+                  <Link
+                    to={link.path}
+                    className="font-heading text-4xl text-white hover:text-[#D4AF37] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                </motion.div>
+              ))}
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: navLinks.length * 0.05 + 0.1, duration: 0.4 }}
+                className="mt-4"
+              >
+                <Link
+                  to="/book"
+                  className="font-heading text-2xl text-[#D4AF37] border-b border-[#D4AF37] pb-1 uppercase tracking-widest hover:text-white hover:border-white transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Reserve Journey
+                </Link>
+              </motion.div>
 
-              <div className="flex flex-col gap-4 mt-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: (navLinks.length + 1) * 0.05 + 0.1, duration: 0.4 }}
+                className="mt-8"
+              >
                 {isLoggedIn ? (
-                  <>
-                    <Link 
-                      to="/profile" 
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between mb-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/30">
-                          {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-white font-medium">{user?.name || 'Profile'}</span>
-                          <span className="text-xs text-muted-foreground">{user?.email}</span>
-                        </div>
-                      </div>
-                      <ChevronRight size={18} className="text-muted-foreground" />
-                    </Link>
-                    <Button variant="outline" onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full justify-center border-red-500/50 text-red-400 hover:bg-red-500/10">Logout</Button>
-                  </>
+                  <div className="flex flex-col items-center gap-6">
+                    <Link to="/profile" className="text-xl text-white/80 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>My Profile</Link>
+                    <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-xl text-red-400 hover:text-red-300 transition-colors">Logout</button>
+                  </div>
                 ) : (
-                  <>
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="ghost" className="w-full justify-center">Login</Button></Link>
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="outline" className="w-full justify-center border-primary text-primary">Register</Button></Link>
-                  </>
+                  <Link to="/login" className="text-xl text-white/80 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    Login
+                  </Link>
                 )}
-              </div>
-            </motion.div>
-          </>
+              </motion.div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

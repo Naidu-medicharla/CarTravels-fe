@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '../context/AuthContext';
 import airportBg from '../assets/services/airport.png';
 import outstationBg from '../assets/services/outstation.png';
 import templeBg from '../assets/services/temple.png';
@@ -122,6 +123,7 @@ const EXPERIENCES: ExperienceData[] = [
 
 export const Services: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [activeExpIndex, setActiveExpIndex] = useState(0);
   const activeExp = EXPERIENCES[activeExpIndex];
 
@@ -196,17 +198,26 @@ export const Services: React.FC = () => {
           
           {activeExp.customOverlay}
 
-          {/* Strict Left Gradient */}
-          <div 
-            className="absolute inset-0 w-full"
-            style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 40%, transparent 100%)' }}
-          />
-          
-          {/* Mobile Bottom Gradient to ensure text readability */}
-          <div 
-            className="absolute inset-0 w-full lg:hidden"
-            style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
-          />
+          {activeExp.id === 'airport' ? (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-transparent to-transparent opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0b]/80 via-transparent to-transparent opacity-80" />
+            </>
+          ) : (
+            <>
+              {/* Strict Left Gradient */}
+              <div 
+                className="absolute inset-0 w-full"
+                style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 40%, transparent 100%)' }}
+              />
+              
+              {/* Mobile Bottom Gradient to ensure text readability */}
+              <div 
+                className="absolute inset-0 w-full lg:hidden"
+                style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
+              />
+            </>
+          )}
         </motion.div>
       </AnimatePresence>
 
@@ -275,7 +286,7 @@ export const Services: React.FC = () => {
                 
                 <motion.div>
                   <Button 
-                    onClick={() => navigate('/book')}
+                    onClick={() => navigate(isLoggedIn ? '/book' : '/login')}
                     className="bg-transparent border border-white/20 text-white hover:bg-white hover:text-black font-medium uppercase tracking-widest text-xs h-12 rounded-none flex items-center gap-4 transition-all duration-500 group px-6 w-fit mb-6 lg:mb-0"
                   >
                     <span>Reserve Journey</span>

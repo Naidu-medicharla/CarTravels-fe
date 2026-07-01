@@ -9,7 +9,11 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import carLottie from '../assets/Car moving.lottie?url';
 
 export const Login: React.FC = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const mode = queryParams.get('mode');
+
+  const [isRegistering, setIsRegistering] = useState(mode === 'register');
   const [isLoading, setIsLoading] = useState(false);
   
   // Form State
@@ -19,11 +23,8 @@ export const Login: React.FC = () => {
   const [phone, setPhone] = useState('');
 
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
   const { addToast } = useToast();
-
-  const queryParams = new URLSearchParams(location.search);
   const redirect = queryParams.get('redirect') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {

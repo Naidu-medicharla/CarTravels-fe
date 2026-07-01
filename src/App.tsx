@@ -10,6 +10,7 @@ import { CustomerProfile } from './pages/CustomerProfile';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Login } from './pages/Login';
 import { Services } from './pages/Services';
+import { About } from './pages/About';
 import loadingVideo from './assets/landing_loading.mp4';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,7 +19,6 @@ import { FleetSection } from './components/Sections/FleetSection';
 
 // Dummy page components for routing
 const Cars = () => <FleetSection />;
-const About = () => <div className="container min-h-[60vh] pt-32 text-center"><h2 className="text-4xl text-white font-heading">About Us</h2></div>;
 const Contact = () => <div className="container min-h-[60vh] pt-32 text-center"><h2 className="text-4xl text-white font-heading">Contact Us</h2></div>;
 
 import { useLocation } from 'react-router-dom';
@@ -35,10 +35,10 @@ function App() {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = 0.6; // Slows down playback to increase animation time
+      videoRef.current.playbackRate = 2.5; // Speed up playback significantly
     }
     // Fallback timeout in case video fails to play
-    const timer = setTimeout(() => setShowSplash(false), 10000);
+    const timer = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -73,7 +73,7 @@ function App() {
             <div className="flex flex-col min-h-screen bg-background">
               <Navbar />
               <ScrollToTop />
-              
+
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -88,7 +88,7 @@ function App() {
                   <Route path="*" element={<Home />} />
                 </Routes>
               </main>
-              
+
               <ConditionalFooter />
             </div>
           </ToastProvider>
