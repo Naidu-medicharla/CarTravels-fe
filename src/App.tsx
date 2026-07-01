@@ -11,6 +11,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { Login } from './pages/Login';
 import { Services } from './pages/Services';
 import { About } from './pages/About';
+import { Contact } from './pages/Contact';
 import loadingVideo from './assets/landing_loading.mp4';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,13 +20,19 @@ import { FleetSection } from './components/Sections/FleetSection';
 
 // Dummy page components for routing
 const Cars = () => <FleetSection />;
-const Contact = () => <div className="container min-h-[60vh] pt-32 text-center"><h2 className="text-4xl text-white font-heading">Contact Us</h2></div>;
-
 import { useLocation } from 'react-router-dom';
+
+const ConditionalNavbar = () => {
+  const location = useLocation();
+  if (location.pathname === '/admin') return null;
+  return <Navbar />;
+};
 
 const ConditionalFooter = () => {
   const location = useLocation();
-  if (location.pathname !== '/') return null;
+  // Don't show footer on specific app-like pages (e.g., admin dashboard, login)
+  const noFooterRoutes = ['/admin', '/login', '/book', '/profile', '/cars', '/services', '/about'];
+  if (noFooterRoutes.includes(location.pathname)) return null;
   return <Footer />;
 };
 
@@ -71,7 +78,7 @@ function App() {
         <Router>
           <ToastProvider>
             <div className="flex flex-col min-h-screen bg-background">
-              <Navbar />
+              <ConditionalNavbar />
               <ScrollToTop />
 
               <main className="flex-1">

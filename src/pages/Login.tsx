@@ -48,7 +48,11 @@ export const Login: React.FC = () => {
         const data = await api.login({ email, password });
         login(data.access_token, data.user);
         addToast('success', `Welcome back, ${data.user.name || 'User'}!`);
-        navigate(redirect);
+        if (data.user.role === 'ADMIN' && redirect === '/') {
+          navigate('/admin');
+        } else {
+          navigate(redirect);
+        }
       }
     } catch (err: any) {
       addToast('error', err.message || 'An error occurred');

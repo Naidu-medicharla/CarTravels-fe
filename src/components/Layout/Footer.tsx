@@ -54,10 +54,10 @@ export const Footer: React.FC = () => {
           {/* Column 1: Logo & Desc */}
           <div className="lg:col-span-2 mb-8 md:mb-0 pb-8 md:pb-0 border-b border-white/10 md:border-none">
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition group mb-6">
-              <Car size={32} className="text-primary group-hover:scale-105 transition-transform" />
+              <Car size={38} className="text-primary group-hover:scale-105 transition-transform" />
               <div className="flex items-baseline gap-1.5 ml-1 pt-1">
-                <span className="font-heading font-bold text-3xl text-primary leading-none tracking-wide">Vibe</span>
-                <span className="font-heading font-normal text-2xl text-white tracking-widest leading-none">Travels</span>
+                <span className="font-heading font-bold text-4xl text-primary leading-none tracking-wide">Vibe</span>
+                <span className="font-heading font-normal text-3xl text-white tracking-widest leading-none">Travels</span>
               </div>
             </Link>
             <p className="text-sm leading-relaxed mb-8 max-w-sm">

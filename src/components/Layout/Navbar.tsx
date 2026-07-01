@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Car, Menu, X, ChevronDown, User, History, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { Car, Menu, X, ChevronDown, User, History, Settings, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
@@ -84,9 +84,14 @@ export const Navbar: React.FC = () => {
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 mt-1 w-56 py-2 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-[999]">
                   <div className="px-4 py-2 border-b border-white/10 mb-2">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{user?.role === 'ADMIN' ? 'Admin' : 'Premium Member'}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{user?.role === 'ADMIN' ? 'System Admin' : 'Premium Member'}</p>
                     <p className="text-xs text-white truncate">{user?.email}</p>
                   </div>
+                  {user?.role === 'ADMIN' && (
+                    <Link to="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-[#D4AF37] hover:text-[#e8cd6e] hover:bg-white/10 transition-colors font-bold">
+                      <LayoutDashboard size={16} /> Admin Panel
+                    </Link>
+                  )}
                   <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
                     <User size={16} className="text-primary" /> My Profile
                   </Link>
@@ -155,11 +160,10 @@ export const Navbar: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: navLinks.length * 0.05 + 0.1, duration: 0.4 }}
-                className="mt-4"
               >
                 <Link
                   to="/book"
-                  className="font-heading text-2xl text-[#D4AF37] border-b border-[#D4AF37] pb-1 uppercase tracking-widest hover:text-white hover:border-white transition-colors"
+                  className="font-heading text-4xl text-white hover:text-[#D4AF37] transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Reserve Journey
@@ -174,6 +178,9 @@ export const Navbar: React.FC = () => {
               >
                 {isLoggedIn ? (
                   <div className="flex flex-col items-center gap-6">
+                    {user?.role === 'ADMIN' && (
+                      <Link to="/admin" className="text-2xl font-heading text-[#D4AF37] hover:text-[#e8cd6e] transition-colors" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
+                    )}
                     <Link to="/profile" className="text-xl text-white/80 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>My Profile</Link>
                     <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-xl text-red-400 hover:text-red-300 transition-colors">Logout</button>
                   </div>
