@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { AuthProvider } from './context/AuthContext';
 import { FleetSection } from './components/Sections/FleetSection';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Dummy page components for routing
 const Cars = () => <FleetSection />;
@@ -84,9 +85,21 @@ function App() {
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
-                  <Route path="/book" element={<BookingFlow />} />
-                  <Route path="/profile" element={<CustomerProfile />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/book" element={
+                    <ProtectedRoute>
+                      <BookingFlow />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <CustomerProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/cars" element={<Cars />} />
                   <Route path="/services" element={<Services />} />
                   <Route path="/about" element={<About />} />
