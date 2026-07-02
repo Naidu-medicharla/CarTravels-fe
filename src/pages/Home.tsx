@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import bgImage from '@/assets/bg.png';
+import bgImage from '@/assets/bg.jpg';
 import starImage from '@/assets/star.png';
 
 const fadeInUp: any = {
@@ -26,7 +26,7 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
-  
+
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const testimonials = [
     { text: "Excellent service. Driver was punctual and the car was immaculate.", author: "Rahul, Hyderabad", rating: 5 },
@@ -43,15 +43,14 @@ export const Home: React.FC = () => {
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0 bg-cover bg-[85%_center] md:bg-[85%_center]"
-          style={{ 
+          className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-[position:30%_center] md:bg-[position:130%_center]"
+          style={{
             backgroundImage: `url(${bgImage})`
           }}
         />
-        
+
         {/* Fog/Vignette Overlays */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-transparent" />
-        <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-full md:w-[60%] lg:w-[55%] z-0 bg-gradient-to-r from-[#050505] via-[#050505]/80 to-transparent" />
 
         <div className="container px-6 md:px-8 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
           <motion.div
@@ -85,7 +84,7 @@ export const Home: React.FC = () => {
                 <ArrowRight className="ml-2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </Button>
             </motion.div>
-            
+
             <motion.div variants={fadeInUp} className="mt-12 flex flex-col items-start gap-4">
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
@@ -126,7 +125,7 @@ export const Home: React.FC = () => {
       {/* Why Choose Us */}
       <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.01]">
         <div className="container px-6 md:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -165,7 +164,7 @@ export const Home: React.FC = () => {
       {/* How It Works */}
       <section className="py-16 md:py-24 border-t border-white/5 bg-[#0a0a0a]">
         <div className="container px-6 md:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -211,7 +210,7 @@ export const Home: React.FC = () => {
       {/* Testimonials */}
       <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.02]">
         <div className="container px-6 md:px-8 max-w-3xl text-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -220,7 +219,7 @@ export const Home: React.FC = () => {
             <div className="flex justify-center gap-1 mb-6 text-primary">
               {[1, 2, 3, 4, 5].map(i => <Star key={i} size={20} fill="currentColor" />)}
             </div>
-            
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTestimonial}

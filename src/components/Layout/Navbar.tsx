@@ -4,6 +4,8 @@ import { Car, Menu, X, ChevronDown, User, History, Settings, LogOut, ChevronRigh
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { NotificationBell } from '@/components/NotificationBell';
+import { useNotifications } from '@/lib/useNotifications';
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -11,6 +13,32 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isLoggedIn, user, logout } = useAuth();
+
+  // Notification hook — only runs when user is logged in and not admin
+  const userToken = (isLoggedIn && user?.role !== 'ADMIN') ? (localStorage.getItem('auth_token') || null) : null;
+  const notifs = useNotifications(userToken);
+
+  // Navigate to the right page when a notification is clicked
+  const handleNavbarNotificationAction = async (notification: any) => {
+    await notifs.markRead(notification.id);
+    notifs.closePanel();
+    const TYPE_TO_PATH: Record<string, string> = {
+      DRIVER_ASSIGNED:       '/profile#bookings',
+      CANCELLATION_APPROVED: '/profile#bookings',
+      CANCELLATION_REJECTED: '/profile#bookings',
+      TICKET_REPLY:          '/profile#support',
+      TIER_UPGRADE:          '/profile',
+    };
+    const path = TYPE_TO_PATH[notification.type];
+    if (path) {
+      if (notification.reference_id) {
+        const [base, hash] = path.split('#');
+        navigate(`${base}?ref=${notification.reference_id}${hash ? '#' + hash : ''}`);
+      } else {
+        navigate(path);
+      }
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -37,7 +65,7 @@ export const Navbar: React.FC = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
-  const isSticky = scrolled || location.pathname !== '/';
+  const isSticky = scrolled;
 
   return (
     <>
@@ -72,38 +100,53 @@ export const Navbar: React.FC = () => {
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
             {isLoggedIn ? (
-              <div className="relative group">
-                <button className="flex items-center gap-2 text-white hover:text-primary transition-colors py-2">
-                  <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/30">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span className="text-sm font-medium">{user?.name || 'Profile'}</span>
-                  <ChevronDown size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
-                </button>
-                
-                {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-1 w-56 py-2 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-[999]">
-                  <div className="px-4 py-2 border-b border-white/10 mb-2">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{user?.role === 'ADMIN' ? 'System Admin' : 'Premium Member'}</p>
-                    <p className="text-xs text-white truncate">{user?.email}</p>
-                  </div>
-                  {user?.role === 'ADMIN' && (
-                    <Link to="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-[#D4AF37] hover:text-[#e8cd6e] hover:bg-white/10 transition-colors font-bold">
-                      <LayoutDashboard size={16} /> Admin Panel
-                    </Link>
-                  )}
-                  <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                    <User size={16} className="text-primary" /> My Profile
-                  </Link>
-                  <Link to="/profile#bookings" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                    <History size={16} className="text-primary" /> Bookings
-                  </Link>
-                  <div className="h-px bg-white/10 my-2" />
-                  <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
-                    <LogOut size={16} /> Logout
+              <>
+                {/* Notification Bell — only for regular users (not admin) */}
+                {user?.role !== 'ADMIN' && (
+                  <NotificationBell
+                    unreadCount={notifs.unreadCount}
+                    notifications={notifs.notifications}
+                    panelOpen={notifs.panelOpen}
+                    onOpen={notifs.openPanel}
+                    onClose={notifs.closePanel}
+                    onAction={handleNavbarNotificationAction}
+                    onMarkAllRead={notifs.markAllRead}
+                  />
+                )}
+
+                <div className="relative group">
+                  <button className="flex items-center gap-2 text-white hover:text-primary transition-colors py-2">
+                    <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/30">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <span className="text-sm font-medium">{user?.name || 'Profile'}</span>
+                    <ChevronDown size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                   </button>
+                  
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 mt-1 w-56 py-2 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-[999]">
+                    <div className="px-4 py-2 border-b border-white/10 mb-2">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{user?.role === 'ADMIN' ? 'System Admin' : 'Premium Member'}</p>
+                      <p className="text-xs text-white truncate">{user?.email}</p>
+                    </div>
+                    {user?.role === 'ADMIN' && (
+                      <Link to="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-[#D4AF37] hover:text-[#e8cd6e] hover:bg-white/10 transition-colors font-bold">
+                        <LayoutDashboard size={16} /> Admin Panel
+                      </Link>
+                    )}
+                    <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                      <User size={16} className="text-primary" /> My Profile
+                    </Link>
+                    <Link to="/profile#bookings" className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                      <History size={16} className="text-primary" /> Bookings
+                    </Link>
+                    <div className="h-px bg-white/10 my-2" />
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
               <>
                 <Link to="/login"><Button variant="ghost" className="text-white hover:text-primary hover:bg-white/5">Login</Button></Link>

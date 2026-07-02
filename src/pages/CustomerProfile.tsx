@@ -8,6 +8,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getFallbackImage } from '@/lib/carImages';
 import { api, type UserProfileResponse } from '@/lib/api';
 import { getMembershipTier } from '@/lib/membership';
+import { NotificationBell } from '@/components/NotificationBell';
+import { useNotifications } from '@/lib/useNotifications';
 
 export const CustomerProfile: React.FC = () => {
   const { user, logout } = useAuth();
@@ -78,11 +80,55 @@ export const CustomerProfile: React.FC = () => {
     }
   }, [user]);
 
+  // Handle deep linking for bookings via ?ref=ID query param
+  useEffect(() => {
+    if (!profile) return;
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref && activeTab === 'My Bookings') {
+      const booking = profile.all_bookings?.find(b => b.id.toString() === ref);
+      if (booking && selectedBooking?.id !== booking.id) {
+        setSelectedBooking(booking);
+        setViewingDetails(true);
+      }
+    }
+  }, [location.search, profile, activeTab]);
+
   const tier = profile ? getMembershipTier(profile.total_trips) : null;
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const userToken = localStorage.getItem('auth_token') || null;
+  const notifs = useNotifications(userToken);
+
+  // ── Notification click handler (User) ──────────────────────────────
+  const USER_TYPE_TO_TAB: Record<string, string> = {
+    DRIVER_ASSIGNED:       'My Bookings',
+    CANCELLATION_APPROVED: 'My Bookings',
+    CANCELLATION_REJECTED: 'My Bookings',
+    TICKET_REPLY:          'Support',
+    TIER_UPGRADE:          'My Bookings',
+  };
+
+  const handleUserNotificationAction = async (notification: any) => {
+    // 1. Mark as read
+    await notifs.markRead(notification.id);
+
+    // 2. Navigate to relevant tab and pass ref
+    const targetTab = USER_TYPE_TO_TAB[notification.type];
+    if (targetTab) {
+      if (notification.reference_id) {
+         navigate(`?ref=${notification.reference_id}#${targetTab === 'My Bookings' ? 'bookings' : 'support'}`);
+      } else {
+         navigate(`#${targetTab === 'My Bookings' ? 'bookings' : 'support'}`);
+      }
+    }
+
+    // 3. Close panel
+    notifs.closePanel();
   };
 
   return (
@@ -94,10 +140,21 @@ export const CustomerProfile: React.FC = () => {
           {activeTab === 'Profile Details' && (
              <div className="space-y-4">
                {/* Header */}
-           <div className="mb-4 mt-2">
-             <h1 className="text-base text-white/80 font-heading font-bold mb-1">Good Morning,</h1>
-             <h2 className="text-[30px] leading-none text-white font-heading font-bold mb-2">{user?.name?.split(' ')[0] || 'Venkat'}</h2>
-             <p className="text-muted-foreground text-sm">Ready for your next premium ride?</p>
+           <div className="mb-4 mt-2 flex items-center justify-between">
+             <div>
+               <h1 className="text-base text-white/80 font-heading font-bold mb-1">Good Morning,</h1>
+               <h2 className="text-[30px] leading-none text-white font-heading font-bold mb-2">{user?.name?.split(' ')[0] || 'Venkat'}</h2>
+               <p className="text-muted-foreground text-sm">Ready for your next premium ride?</p>
+             </div>
+             <NotificationBell
+               unreadCount={notifs.unreadCount}
+               notifications={notifs.notifications}
+               panelOpen={notifs.panelOpen}
+               onOpen={notifs.openPanel}
+               onClose={notifs.closePanel}
+               onAction={handleUserNotificationAction}
+               onMarkAllRead={notifs.markAllRead}
+             />
            </div>
 
            {/* Compressed Profile Card */}
@@ -327,6 +384,18 @@ export const CustomerProfile: React.FC = () => {
           <div className="lg:col-span-1 space-y-6">
             <Card className="glass-panel p-6 text-center border-white/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full -z-10" />
+              {/* Bell in desktop sidebar */}
+              <div className="absolute top-4 right-4">
+                <NotificationBell
+                  unreadCount={notifs.unreadCount}
+                  notifications={notifs.notifications}
+                  panelOpen={notifs.panelOpen}
+                  onOpen={notifs.openPanel}
+                  onClose={notifs.closePanel}
+                  onAction={handleUserNotificationAction}
+                  onMarkAllRead={notifs.markAllRead}
+                />
+              </div>
               <div className="w-24 h-24 rounded-full bg-black flex items-center justify-center mx-auto mb-4 border border-primary/30 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
                 <User size={40} className="text-primary" />
               </div>

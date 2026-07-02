@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ArrowRight, PhoneCall, Mail, CheckCircle2 } from 'lucide-react';
+import { ChevronDown, ArrowRight, PhoneCall, Mail, CheckCircle2, Ticket, Clock, CheckCircle } from 'lucide-react';
+import { api, TicketOut } from '../lib/api';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -24,6 +25,16 @@ export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', subject: '', message: ''
   });
+  const [myTickets, setMyTickets] = useState<TicketOut[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const token = localStorage.getItem('auth_token');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (token) {
+      api.getMyTickets(token).then(setMyTickets).catch(console.error);
+    }
+  }, [token]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -42,11 +53,28 @@ export const Contact: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate sending message
-    alert("Message sent! Our concierge will contact you shortly.");
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        full_name: formData.name,
+        email: formData.email,
+        phone_number: formData.phone,
+        subject: formData.subject,
+        message: formData.message
+      };
+      const newTicket = await api.createTicket(token, payload);
+      alert("Message sent! Our concierge will contact you shortly.");
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      if (token) {
+        setMyTickets(prev => [newTicket, ...prev]);
+      }
+    } catch (e) {
+      alert("Failed to send message: " + e);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -218,11 +246,42 @@ export const Contact: React.FC = () => {
             </div>
 
             <div className="mt-12 flex justify-center">
-              <button type="submit" className="w-full md:w-auto bg-[#D4AF37] text-black h-14 px-12 flex items-center justify-center text-sm tracking-[0.2em] uppercase font-bold hover:bg-white transition-all duration-300 rounded-md shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
-                Contact Concierge
+              <button disabled={isSubmitting} type="submit" className="w-full md:w-auto bg-[#D4AF37] text-black h-14 px-12 flex items-center justify-center text-sm tracking-[0.2em] uppercase font-bold hover:bg-white transition-all duration-300 rounded-md shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] disabled:opacity-50">
+                {isSubmitting ? 'Sending...' : 'Contact Concierge'}
               </button>
             </div>
           </form>
+
+          {/* My Tickets Section */}
+          {token && myTickets.length > 0 && (
+            <div className="mt-24">
+              <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] mb-6 font-bold text-center">My Inquiry History</h3>
+              <div className="flex flex-col gap-4">
+                {myTickets.map(ticket => (
+                  <div key={ticket.ticket_id} className="bg-[#111111] border border-white/10 p-6 rounded-lg relative overflow-hidden group hover:border-white/30 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-lg font-bold text-white mb-1">{ticket.subject}</h4>
+                        <span className="text-xs text-white/40">{new Date(ticket.created_at).toLocaleString()}</span>
+                      </div>
+                      <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded border ${ticket.status === 'RESOLVED' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                        {ticket.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mb-4">{ticket.message}</p>
+                    
+                    {ticket.admin_reply && (
+                      <div className="mt-4 p-4 bg-[#0A0A0A] border-l-2 border-[#D4AF37] rounded-r text-sm text-white/80">
+                        <strong className="block text-[#D4AF37] text-xs uppercase mb-2 tracking-widest">Concierge Reply</strong>
+                        <p>{ticket.admin_reply}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 

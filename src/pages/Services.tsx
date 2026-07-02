@@ -131,6 +131,14 @@ export const Services: React.FC = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Auto-play slideshow
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveExpIndex((prev) => (prev + 1) % EXPERIENCES.length);
+    }, 6000); // 6 seconds per slide
+    return () => clearInterval(timer);
+  }, []);
+
   const getPositionClasses = (pos: SpecPosition) => {
     switch (pos) {
       case 'top-left': return 'top-0 left-4 md:left-12 items-start text-left';
@@ -176,7 +184,7 @@ export const Services: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen relative overflow-hidden font-sans pt-[80px]">
+    <div className="bg-[#050505] min-h-screen relative overflow-hidden font-sans pt-[140px]">
       
       {/* --- CINEMATIC BACKGROUND --- */}
       <AnimatePresence mode="wait">
@@ -221,36 +229,36 @@ export const Services: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 min-h-[calc(100vh-80px)] flex flex-col pt-4 md:pt-8 pb-12">
+      <div className="relative z-10 min-h-[calc(100vh-140px)] flex flex-col pt-4 md:pt-8 pb-12">
         
-        {/* --- EXPERIENCE NAVIGATION TABS --- */}
-        <div className="container mx-auto px-4 md:px-12 mb-2 md:mb-8">
-          <div 
-            className="flex items-center gap-6 md:gap-10 border-b border-white/[0.08] pb-4 overflow-x-auto whitespace-nowrap"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <span className="text-[#D4AF37] uppercase tracking-widest text-[10px] font-bold hidden md:block mr-2 shrink-0">Experiences</span>
-            {EXPERIENCES.map((exp, index) => {
-              const isActive = activeExpIndex === index;
-              return (
-                <button
-                  key={exp.id}
-                  onClick={() => setActiveExpIndex(index)}
-                  className={`relative text-[11px] md:text-xs tracking-widest uppercase transition-colors duration-300 pb-4 -mb-4 shrink-0 ${
-                    isActive ? 'text-white font-bold' : 'text-white/40 hover:text-white/80 font-medium'
-                  }`}
-                >
+        {/* --- BOTTOM SLIDE INDICATORS --- */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[50] flex items-center gap-3">
+          {EXPERIENCES.map((exp, index) => {
+            const isActive = activeExpIndex === index;
+            return (
+              <button
+                key={exp.id}
+                onClick={() => setActiveExpIndex(index)}
+                className="group relative px-2 py-4 flex flex-col items-center justify-center"
+              >
+                {/* Tooltip text that appears on hover or when active */}
+                <span className={`absolute bottom-full mb-2 text-[10px] tracking-[0.2em] uppercase whitespace-nowrap transition-all duration-500 font-light ${
+                  isActive 
+                    ? 'text-white opacity-100 translate-y-0' 
+                    : 'text-white/40 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 pointer-events-none'
+                }`}>
                   {exp.shortName}
-                  {isActive && (
-                    <motion.div 
-                      layoutId="navIndicator"
-                      className="absolute bottom-0 left-0 w-full h-[1px] bg-[#D4AF37]"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                </span>
+                
+                {/* The line indicator */}
+                <div className={`h-[2px] transition-all duration-500 rounded-full ${
+                  isActive 
+                    ? 'w-10 bg-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.5)]' 
+                    : 'w-4 bg-white/20 group-hover:bg-white/60 group-hover:w-6'
+                }`} />
+              </button>
+            );
+          })}
         </div>
 
         {/* --- MAIN EDITORIAL CONTENT --- */}

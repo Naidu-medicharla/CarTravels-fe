@@ -6,11 +6,13 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NotificationBell } from '../components/NotificationBell';
+import { useNotifications } from '../lib/useNotifications';
 import { 
   kpiData, alertsData, actionRequired, fleetStatus, 
   revenueSummary, recentBookings, recentInquiries, mockSchedule, mockBookingsList, mockInquiriesList, mockFleet, mockCustomers
 } from '../data/mockAdminData';
-import { api, DashboardDetailsResponse } from '../lib/api';
+import { api, DashboardDetailsResponse, AdminBooking, AvailableDriver, AdminUserDetails, AdminCarOut } from '../lib/api';
 
 // Subcomponents
 const StatBox = ({ title, value }: { title: string, value: string | number }) => (
@@ -50,8 +52,58 @@ export const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState(mockBookingsList);
   const [inquiries, setInquiries] = useState(mockInquiriesList);
 
+  const adminToken = localStorage.getItem('auth_token') || null;
+  const notifications = useNotifications(adminToken);
+
+  // ── Notification click handler ──────────────────────────────────────────────
+  // Maps notification type → admin tab + data refresh
+  const TYPE_TO_TAB: Record<string, string> = {
+    NEW_BOOKING:      'Bookings',
+    CANCEL_REQUEST:   'Bookings',
+    NEW_TICKET:       'Support / Inquiries',
+  };
+
+  const handleAdminNotificationAction = async (notification: any) => {
+    // 1. Mark as read (removes from panel)
+    await notifications.markRead(notification.id);
+
+    // 2. Resolve which tab to open
+    const targetTab = TYPE_TO_TAB[notification.type];
+    if (!targetTab) return; // Unknown type — just dismiss
+
+    // 3. Switch tab
+    setActiveTab(targetTab);
+
+    // 4. Close the panel
+    notifications.closePanel();
+
+    // 5. Silently refresh the relevant data
+    const token = adminToken || '';
+    if (targetTab === 'Bookings') {
+      try {
+        const data = await api.getAdminBookings(token);
+        setAdminBookings(data);
+      } catch { /* silently ignore */ }
+    } else if (targetTab === 'Support / Inquiries') {
+      try {
+        const data = await api.getAdminTickets(token);
+        setAdminTickets(data);
+      } catch { /* silently ignore */ }
+    }
+  };
+
   const [dashboardData, setDashboardData] = useState<DashboardDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [adminBookings, setAdminBookings] = useState<AdminBooking[]>([]);
+  const [adminBookingsLoading, setAdminBookingsLoading] = useState(false);
+  const [adminUsers, setAdminUsers] = useState<AdminUserDetails[]>([]);
+  const [adminUsersLoading, setAdminUsersLoading] = useState(false);
+  const [adminCars, setAdminCars] = useState<AdminCarOut[]>([]);
+  const [adminCarsLoading, setAdminCarsLoading] = useState(false);
+  const [adminTickets, setAdminTickets] = useState<any[]>([]);
+  const [adminTicketsLoading, setAdminTicketsLoading] = useState(false);
+  const [availableDrivers, setAvailableDrivers] = useState<AvailableDriver[]>([]);
 
   React.useEffect(() => {
     if (activeTab === 'Dashboard') {
@@ -68,6 +120,62 @@ export const AdminDashboard: React.FC = () => {
         }
       };
       fetchData();
+    } else if (activeTab === 'Bookings') {
+      const fetchBookings = async () => {
+        setAdminBookingsLoading(true);
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const data = await api.getAdminBookings(token);
+          setAdminBookings(data);
+        } catch (e) {
+          console.error('Failed to fetch admin bookings', e);
+        } finally {
+          setAdminBookingsLoading(false);
+        }
+      };
+      fetchBookings();
+    } else if (activeTab === 'Customers') {
+      const fetchUsers = async () => {
+        setAdminUsersLoading(true);
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const data = await api.getAdminUsersDetails(token);
+          setAdminUsers(data);
+        } catch (e) {
+          console.error('Failed to fetch admin users', e);
+        } finally {
+          setAdminUsersLoading(false);
+        }
+      };
+      fetchUsers();
+    } else if (activeTab === 'Cars') {
+      const fetchCars = async () => {
+        setAdminCarsLoading(true);
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const data = await api.getAdminCars(token);
+          setAdminCars(data);
+        } catch (e) {
+          console.error('Failed to fetch admin cars', e);
+        } finally {
+          setAdminCarsLoading(false);
+        }
+      };
+      fetchCars();
+    } else if (activeTab === 'Support / Inquiries') {
+      const fetchTickets = async () => {
+        setAdminTicketsLoading(true);
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const data = await api.getAdminTickets(token);
+          setAdminTickets(data);
+        } catch (e) {
+          console.error('Failed to fetch admin tickets', e);
+        } finally {
+          setAdminTicketsLoading(false);
+        }
+      };
+      fetchTickets();
     }
   }, [activeTab]);
 
@@ -80,7 +188,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Drawer State - Inquiry
   const [isInquiryDrawerOpen, setIsInquiryDrawerOpen] = useState(false);
-  const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(null);
+  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [priorityLevel, setPriorityLevel] = useState('Medium');
 
@@ -88,6 +196,7 @@ export const AdminDashboard: React.FC = () => {
   const [fleet, setFleet] = useState(mockFleet);
   const [isCarDrawerOpen, setIsCarDrawerOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState<any>(null);
+  const [editCarState, setEditCarState] = useState<any>(null);
   
   // Modals for Cars
   const [isUnavailableModalOpen, setIsUnavailableModalOpen] = useState(false);
@@ -98,45 +207,89 @@ export const AdminDashboard: React.FC = () => {
   
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [archiveConflictMode, setArchiveConflictMode] = useState<boolean>(false);
+  const [isCarStatusModalOpen, setIsCarStatusModalOpen] = useState(false);
+  const [selectedCarForStatus, setSelectedCarForStatus] = useState<AdminCarOut | null>(null);
 
   // Customers Module State
   const [customersList, setCustomersList] = useState(mockCustomers);
   const [isCustomerDrawerOpen, setIsCustomerDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
 
   // Cancel Request State
-  const [isCancelRejectModalOpen, setIsCancelRejectModalOpen] = useState(false);
+  const [isReviewCancelModalOpen, setIsReviewCancelModalOpen] = useState(false);
+  const [bookingToReview, setBookingToReview] = useState<AdminBooking | null>(null);
+  const [isRejectMode, setIsRejectMode] = useState(false);
   const [cancelRejectReason, setCancelRejectReason] = useState('');
-  const [bookingToReject, setBookingToReject] = useState<string | null>(null);
 
-  const handleApproveCancel = async (id: string) => {
+  const handleApproveCancel = async (id: number) => {
     try {
       const token = localStorage.getItem('auth_token') || '';
-      await api.approveCancelBooking(token, parseInt(id));
+      await api.approveCancelBooking(token, id);
+      setAdminBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'CANCELLED' } : b));
+      setIsReviewCancelModalOpen(false);
     } catch (e) {
       console.error(e);
     }
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'Cancelled' } : b));
   };
 
-  const openRejectCancelModal = (id: string) => {
-    setBookingToReject(id);
+  const handleBlockUserSubmit = async () => {
+    if (!selectedCustomer || !blockReason.trim()) return;
+    try {
+      const token = localStorage.getItem('auth_token') || '';
+      await api.blockUser(token, selectedCustomer.email, blockReason);
+      setAdminUsers(prev => prev.map(u => u.email === selectedCustomer.email ? { ...u, is_blocked: true, block_reason: blockReason } : u));
+      setSelectedCustomer({ ...selectedCustomer, is_blocked: true, block_reason: blockReason });
+    } catch (e) {
+      console.error(e);
+    }
+    setIsBlockModalOpen(false);
+    setBlockReason('');
+  };
+
+  const openReviewCancelModal = (booking: AdminBooking) => {
+    setBookingToReview(booking);
+    setIsRejectMode(false);
     setCancelRejectReason('');
-    setIsCancelRejectModalOpen(true);
+    setIsReviewCancelModalOpen(true);
   };
 
   const handleRejectCancel = async () => {
-    if (!bookingToReject || !cancelRejectReason.trim()) return;
+    if (!bookingToReview || !cancelRejectReason.trim()) return;
     try {
       const token = localStorage.getItem('auth_token') || '';
-      await api.rejectCancelBooking(token, parseInt(bookingToReject), cancelRejectReason);
+      await api.rejectCancelBooking(token, bookingToReview.id, cancelRejectReason);
+      setAdminBookings(prev => prev.map(b => b.id === bookingToReview.id ? { ...b, status: 'CONFIRMED' } : b));
     } catch (e) {
       console.error(e);
     }
-    setBookings(prev => prev.map(b => b.id === bookingToReject ? { ...b, status: 'Confirmed' } : b));
-    setIsCancelRejectModalOpen(false);
-    setBookingToReject(null);
+    setIsReviewCancelModalOpen(false);
+    setBookingToReview(null);
+  };
+
+  const handleToggleAvailabilityClick = (car: AdminCarOut) => {
+    setSelectedCarForStatus(car);
+    setIsCarStatusModalOpen(true);
+  };
+
+  const handleConfirmToggleAvailability = async () => {
+    if (!selectedCarForStatus) return;
+    const token = localStorage.getItem('auth_token') || '';
+    try {
+      if (selectedCarForStatus.available) {
+        await api.makeCarUnavailable(token, selectedCarForStatus.car_number);
+        setAdminCars(prev => prev.map(c => c.car_number === selectedCarForStatus.car_number ? { ...c, available: false } : c));
+      } else {
+        await api.makeCarAvailable(token, selectedCarForStatus.car_number);
+        setAdminCars(prev => prev.map(c => c.car_number === selectedCarForStatus.car_number ? { ...c, available: true } : c));
+      }
+      setIsCarStatusModalOpen(false);
+      setSelectedCarForStatus(null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const unassignedCount = bookings.filter(b => b.driver === 'Unassigned').length;
@@ -147,54 +300,131 @@ export const AdminDashboard: React.FC = () => {
     setActiveTab('Bookings');
   };
 
-  const openAssignDrawer = (id: string) => {
+  const openAssignDrawer = async (id: string) => {
     setSelectedBookingId(id);
     setDriverMode('select');
     setSelectedDriver('');
     setIsDrawerOpen(true);
-  };
-
-  const handleAssignDriver = () => {
-    const driverName = driverMode === 'select' ? selectedDriver : newDriver.name;
-    if (!driverName) return;
-
-    setBookings(prev => prev.map(b => 
-      b.id === selectedBookingId ? { ...b, driver: driverName, status: 'Confirmed' } : b
-    ));
-    setIsDrawerOpen(false);
     
-    // Also update mockSchedule if applicable
-    const scheduleItem = mockSchedule.find(s => s.id === selectedBookingId);
-    if(scheduleItem) {
-        scheduleItem.driver = driverName;
-        scheduleItem.status = 'Confirmed';
+    try {
+      const b = adminBookings.find(x => x.id.toString() === id);
+      if (!b) return;
+
+      const startDate = new Date(b.start_date).toISOString().split('T')[0];
+      const endDate = new Date(b.end_date).toISOString().split('T')[0];
+
+      const token = localStorage.getItem('auth_token') || '';
+      const drivers = await api.getAvailableDrivers(token, startDate, endDate);
+      setAvailableDrivers(drivers);
+    } catch (e) {
+      console.error('Failed to fetch drivers', e);
     }
   };
 
-  const openInquiryDrawer = (id: string) => {
-    setSelectedInquiryId(id);
-    setReplyText('');
-    const inq = inquiries.find(i => i.id === id);
-    if (inq) {
-      setPriorityLevel(inq.priority || 'Medium');
-      if (inq.status === 'New') {
-        setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: 'Opened' } : i));
+  const handleAssignDriver = async () => {
+    if (!selectedBookingId) return;
+
+    if (driverMode === 'select') {
+      if (!selectedDriver) return;
+      try {
+        const driverObj = availableDrivers.find(d => d.id.toString() === selectedDriver || d.driver_id === selectedDriver);
+        if (!driverObj) return;
+
+        const token = localStorage.getItem('auth_token') || '';
+        await api.assignDriver(token, parseInt(selectedBookingId), driverObj.driver_id, driverObj.driver_name);
+
+        setAdminBookings(prev => prev.map(b => 
+          b.id.toString() === selectedBookingId ? { ...b, driver_id: driverObj.driver_id, driver_name: driverObj.driver_name } : b
+        ));
+        setIsDrawerOpen(false);
+      } catch (e) {
+        console.error('Failed to assign driver', e);
+      }
+    } else {
+      if (!newDriver.name || !newDriver.phone) return;
+      try {
+        const token = localStorage.getItem('auth_token') || '';
+        // Pass "TEMP" as the driverId for temp drivers. The backend will not find "TEMP" in the Driver table,
+        // so it will use the provided newDriver.phone as the driver_phone.
+        await api.assignDriver(token, parseInt(selectedBookingId), "TEMP", newDriver.name, newDriver.phone);
+
+        setAdminBookings(prev => prev.map(b => 
+          b.id.toString() === selectedBookingId ? { ...b, driver_name: newDriver.name, driver_phone: newDriver.phone } : b
+        ));
+        setIsDrawerOpen(false);
+      } catch (e) {
+        console.error('Failed to assign temp driver', e);
       }
     }
+  };
+
+  const openInquiryDrawer = (id: number) => {
+    setSelectedInquiryId(id);
+    setReplyText('');
     setIsInquiryDrawerOpen(true);
   };
 
-  const handleSendReply = () => {
-    if (!replyText.trim()) return;
-    setInquiries(prev => prev.map(i => 
-      i.id === selectedInquiryId ? { ...i, status: 'Replied', admin_reply: replyText, priority: priorityLevel } : i
-    ));
-    setIsInquiryDrawerOpen(false);
+  const handleSendReply = async () => {
+    if (!replyText.trim() || selectedInquiryId === null) return;
+    try {
+      const token = localStorage.getItem('auth_token') || '';
+      const updatedTicket = await api.replyToTicket(token, selectedInquiryId, replyText, true); // Mark as resolved by default
+      setAdminTickets(prev => prev.map(t => t.ticket_id === selectedInquiryId ? updatedTicket : t));
+      setIsInquiryDrawerOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to send reply: ' + e);
+    }
   };
 
   const openEditCarDrawer = (car: any) => {
     setSelectedCar(car);
+    setEditCarState({ ...car, location: car.location || 'Hyderabad', description: car.description || '' });
     setIsCarDrawerOpen(true);
+  };
+
+  const openAddCarDrawer = () => {
+    setSelectedCar(null);
+    setEditCarState({
+      car_number: '',
+      brand: '',
+      model: '',
+      year: new Date().getFullYear(),
+      fuel_type: 'Petrol',
+      transmission: 'Automatic',
+      price_per_day: 0,
+      price_per_km: 0,
+      seats: 4,
+      location: 'Hyderabad',
+      description: '',
+      availability_type: 'BOTH',
+      available: true,
+      images: []
+    });
+    setIsCarDrawerOpen(true);
+  };
+
+  const handleUpdateCarSubmit = async () => {
+    if (!editCarState) return;
+    try {
+      const token = localStorage.getItem('auth_token') || '';
+      
+      if (selectedCar) {
+        const updatedCar = await api.updateAdminCar(token, editCarState.car_number, editCarState);
+        setAdminCars(prev => prev.map(c => c.car_number === updatedCar.car_number ? updatedCar : c));
+      } else {
+        await api.createAdminCar(token, editCarState);
+        const data = await api.getAdminCars(token);
+        setAdminCars(data);
+      }
+      
+      setIsCarDrawerOpen(false);
+      setSelectedCar(null);
+      setEditCarState(null);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save car: ' + e);
+    }
   };
 
   const handleMakeUnavailableClick = (car: any) => {
@@ -270,36 +500,6 @@ export const AdminDashboard: React.FC = () => {
     return (
     <div className="space-y-6">
       
-      {/* 1. Alert Center */}
-      <div className="flex flex-col gap-2">
-        {unassignedCount > 0 && (
-          <button onClick={() => navigateToBookings('Awaiting Driver')} className="flex justify-between items-center bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 p-4 rounded-lg transition-colors text-left group min-h-[56px]">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🚗</span>
-              <span className="font-bold text-[#D4AF37] text-sm md:text-base">Driver Assignment ({unassignedCount})</span>
-            </div>
-            <ChevronRight size={18} className="text-[#D4AF37] group-hover:translate-x-1 transition-transform" />
-          </button>
-        )}
-        {newInquiriesCount > 0 && (
-          <button onClick={() => setActiveTab('Support / Inquiries')} className="flex justify-between items-center bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 p-4 rounded-lg transition-colors text-left group min-h-[56px]">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">📧</span>
-              <span className="font-bold text-blue-400 text-sm md:text-base">New Inquiries ({newInquiriesCount})</span>
-            </div>
-            <ChevronRight size={18} className="text-blue-400 group-hover:translate-x-1 transition-transform" />
-          </button>
-        )}
-        {alertsData.filter(a => !a.text.includes('Driver') && !a.text.includes('Inquiries')).map((alert, i) => (
-          <div key={i} className="flex justify-between items-center bg-[#111111] hover:bg-[#1a1a1a] border border-white/10 p-4 rounded-lg transition-colors min-h-[56px]">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{alert.icon}</span>
-              <span className="font-bold text-white text-sm md:text-base">{alert.text}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* 2. Dashboard Overview KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
         <SectionCard title="Bookings" className="p-4 md:p-5">
@@ -311,9 +511,7 @@ export const AdminDashboard: React.FC = () => {
         <SectionCard title="Cars" className="p-4 md:p-5">
           <span className="text-2xl md:text-3xl font-bold text-white">{dashboardData.kpis.available_cars}</span>
         </SectionCard>
-        <SectionCard title="Pending" className="p-4 md:p-5">
-          <span className="text-2xl md:text-3xl font-bold text-yellow-500">{kpiData.pendingRequests}</span>
-        </SectionCard>
+
         <SectionCard title="Inquiries" className="p-4 md:p-5">
           <span className="text-2xl md:text-3xl font-bold text-white">{newInquiriesCount}</span>
         </SectionCard>
@@ -467,32 +665,6 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </SectionCard>
 
-          {/* 6. Fleet Status */}
-          <SectionCard title="Fleet Status">
-            <div className="flex justify-between items-center">
-              <StatBox title="Available" value={fleetStatus.available} />
-              <div className="w-px h-8 bg-white/10" />
-              <StatBox title="Booked" value={fleetStatus.booked} />
-              <div className="w-px h-8 bg-white/10" />
-              <StatBox title="Maintenance" value={fleetStatus.maintenance} />
-            </div>
-          </SectionCard>
-
-          {/* 7. Customer Support */}
-          <SectionCard title="Support & Inquiries">
-            <div className="flex flex-col gap-4">
-              {recentInquiries.map((iq, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] mb-0.5 block">{iq.type}</span>
-                    <h4 className="text-sm font-medium text-white">{iq.subject}</h4>
-                  </div>
-                  <span className="text-xs text-white/40">{iq.time}</span>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-
           {/* 8. Revenue Summary */}
           <SectionCard title="Revenue Summary">
             <div className="flex flex-col gap-3">
@@ -518,15 +690,24 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderBookingsPlaceholder = () => {
-    const cancelRequestsCount = bookings.filter(b => b.status === 'CANCEL_REQUESTED').length;
+    if (adminBookingsLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+        </div>
+      );
+    }
 
-    const filteredBookings = bookings.filter(b => {
-      if (activeFilter === 'Awaiting Driver') return b.driver === 'Unassigned';
-      if (activeFilter === 'Pending') return b.status === 'Pending';
-      if (activeFilter === 'Confirmed') return b.status === 'Confirmed';
+    const cancelRequestsCount = adminBookings.filter(b => b.status === 'CANCEL_REQUESTED').length;
+    const unassignedDriversCount = adminBookings.filter(b => b.driver_required && !b.driver_name).length;
+
+    const filteredBookings = adminBookings.filter(b => {
+      if (activeFilter === 'Awaiting Driver') return b.driver_required && !b.driver_name;
+      if (activeFilter === 'Pending') return b.status === 'PENDING';
+      if (activeFilter === 'Confirmed') return b.status === 'CONFIRMED';
       if (activeFilter === 'Cancel Requests') return b.status === 'CANCEL_REQUESTED';
-      if (activeFilter === 'Cancelled') return b.status === 'Cancelled' || b.status === 'CANCELLED';
-      if (activeFilter === 'Completed') return b.status === 'Completed';
+      if (activeFilter === 'Cancelled') return b.status === 'CANCELLED';
+      if (activeFilter === 'Completed') return b.status === 'COMPLETED';
       return true; // 'All'
     });
 
@@ -549,7 +730,7 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => setActiveFilter(f)}
               className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeFilter === f ? 'bg-white text-black' : 'bg-[#111111] border border-white/10 text-white hover:bg-white/10'}`}
             >
-              {f} {f === 'Awaiting Driver' && unassignedCount > 0 && `(${unassignedCount})`}
+              {f} {f === 'Awaiting Driver' && unassignedDriversCount > 0 && `(${unassignedDriversCount})`}
               {f === 'Cancel Requests' && cancelRequestsCount > 0 && `(${cancelRequestsCount})`}
             </button>
           ))}
@@ -564,42 +745,39 @@ export const AdminDashboard: React.FC = () => {
                   <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">ID / Date</th>
                   <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">Customer</th>
                   <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">Vehicle & Driver</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">Route</th>
                   <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredBookings.map((b) => (
+                {filteredBookings.map((b) => {
+                  const needsDriver = b.driver_required && !b.driver_name;
+                  return (
                   <tr key={b.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-4 py-4">
-                      <span className="font-bold text-white text-sm block">{b.id}</span>
-                      <span className="text-xs text-white/50">{b.date}</span>
+                      <span className="font-bold text-white text-sm block">{b.booking_id}</span>
+                      <span className="text-xs text-white/50">{new Date(b.created_at).toLocaleDateString()}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="font-medium text-white text-sm block">{b.customer}</span>
-                      <span className="text-xs text-white/50">{b.phone}</span>
+                      <span className="font-medium text-white text-sm block">{b.user.name}</span>
+                      <span className="text-xs text-white/50">{b.paid_by !== b.user.name ? b.paid_by : ''}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="font-medium text-[#D4AF37] text-sm block">{b.vehicle}</span>
-                      <span className={`text-xs ${b.driver === 'Unassigned' ? 'text-red-400 font-medium' : 'text-white/50'}`}>{b.driver}</span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-xs text-white block">{b.pickup}</span>
+                      <span className="font-medium text-[#D4AF37] text-sm block">{b.car.brand} {b.car.model}</span>
+                      {b.driver_required && (
+                        <span className={`text-xs ${needsDriver ? 'text-red-400 font-medium' : 'text-white/50'}`}>
+                          {b.driver_name || 'Driver Needed'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-4"><StatusText status={b.status} /></td>
                     <td className="px-4 py-4 text-right">
                       {b.status === 'CANCEL_REQUESTED' ? (
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleApproveCancel(b.id)} className="bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">
-                            Approve
-                          </button>
-                          <button onClick={() => openRejectCancelModal(b.id)} className="bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">
-                            Reject
-                          </button>
-                        </div>
-                      ) : b.driver === 'Unassigned' ? (
-                        <button onClick={() => openAssignDrawer(b.id)} className="bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                        <button onClick={() => openReviewCancelModal(b)} className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500 hover:text-black px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                          Review Request
+                        </button>
+                      ) : needsDriver ? (
+                        <button onClick={() => openAssignDrawer(b.id.toString())} className="bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black px-3 py-1.5 rounded text-xs font-bold transition-colors">
                           Assign Driver
                         </button>
                       ) : (
@@ -609,10 +787,11 @@ export const AdminDashboard: React.FC = () => {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {filteredBookings.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-white/40 text-sm">No bookings found for this filter.</td>
+                    <td colSpan={5} className="px-4 py-12 text-center text-white/40 text-sm">No bookings found for this filter.</td>
                   </tr>
                 )}
               </tbody>
@@ -621,39 +800,38 @@ export const AdminDashboard: React.FC = () => {
 
           {/* Mobile Cards */}
           <div className="md:hidden flex flex-col gap-4 bg-[#050505]">
-            {filteredBookings.map((b) => (
+            {filteredBookings.map((b) => {
+              const needsDriver = b.driver_required && !b.driver_name;
+              return (
               <div key={b.id} className="bg-[#111111] border border-white/5 p-4 rounded-lg flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="font-bold text-white block">{b.customer}</span>
-                    <span className="text-xs text-white/50">{b.id} • {b.date}</span>
+                    <span className="font-bold text-white block">{b.user.name}</span>
+                    <span className="text-xs text-white/50">{b.booking_id} • {new Date(b.created_at).toLocaleDateString()}</span>
                   </div>
                   <StatusText status={b.status} />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div><span className="text-white/40 block mb-0.5">Vehicle</span><span className="text-[#D4AF37] font-bold">{b.vehicle}</span></div>
-                  <div><span className="text-white/40 block mb-0.5">Route</span><span className="text-white">{b.pickup}</span></div>
-                  <div className="col-span-2">
-                    <span className="text-white/40 block mb-0.5">Driver</span>
-                    <span className={b.driver === 'Unassigned' ? 'text-red-400 font-bold' : 'text-white'}>{b.driver}</span>
-                  </div>
+                  <div className="col-span-2"><span className="text-white/40 block mb-0.5">Vehicle</span><span className="text-[#D4AF37] font-bold">{b.car.brand} {b.car.model}</span></div>
+                  {b.driver_required && (
+                    <div className="col-span-2">
+                      <span className="text-white/40 block mb-0.5">Driver</span>
+                      <span className={needsDriver ? 'text-red-400 font-bold' : 'text-white'}>{b.driver_name || 'Driver Needed'}</span>
+                    </div>
+                  )}
                 </div>
                 {b.status === 'CANCEL_REQUESTED' ? (
-                  <div className="flex justify-end gap-2 mt-2">
-                    <button onClick={() => handleApproveCancel(b.id)} className="flex-1 bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white py-2 rounded text-xs font-bold transition-colors">
-                      Approve
-                    </button>
-                    <button onClick={() => openRejectCancelModal(b.id)} className="flex-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white py-2 rounded text-xs font-bold transition-colors">
-                      Reject
-                    </button>
-                  </div>
-                ) : b.driver === 'Unassigned' && (
-                  <button onClick={() => openAssignDrawer(b.id)} className="w-full mt-2 bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black py-2 rounded text-xs font-bold transition-colors">
+                  <button onClick={() => openReviewCancelModal(b)} className="w-full mt-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500 hover:text-black py-2 rounded text-xs font-bold transition-colors">
+                    Review Request
+                  </button>
+                ) : needsDriver && (
+                  <button onClick={() => openAssignDrawer(b.id.toString())} className="w-full mt-2 bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black py-2 rounded text-xs font-bold transition-colors">
                     Assign Driver
                   </button>
                 )}
               </div>
-            ))}
+              );
+            })}
             {filteredBookings.length === 0 && (
               <div className="py-12 text-center text-white/40 text-sm bg-[#111111] rounded-lg border border-white/5">
                 No bookings found for this filter.
@@ -689,28 +867,28 @@ export const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {inquiries.map((inq) => (
-                  <tr key={inq.id} className="hover:bg-white/[0.02] transition-colors group">
+                {adminTickets.map((inq) => (
+                  <tr key={inq.ticket_id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-4 py-4">
-                      <span className="font-bold text-white text-sm block">{inq.name}</span>
+                      <span className="font-bold text-white text-sm block">{inq.full_name}</span>
                     </td>
                     <td className="px-4 py-4">
                       <span className="font-medium text-[#D4AF37] text-sm block">{inq.subject}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-xs text-white block">{inq.created_at}</span>
+                      <span className="text-xs text-white block">{new Date(inq.created_at).toLocaleString()}</span>
                     </td>
                     <td className="px-4 py-4"><StatusText status={inq.status} /></td>
                     <td className="px-4 py-4 text-right">
-                      <button onClick={() => openInquiryDrawer(inq.id)} className="bg-[#111111] text-white border border-white/30 hover:border-[#D4AF37] hover:text-[#D4AF37] px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                      <button onClick={() => openInquiryDrawer(inq.ticket_id)} className="bg-[#111111] text-white border border-white/30 hover:border-[#D4AF37] hover:text-[#D4AF37] px-3 py-1.5 rounded text-xs font-bold transition-colors">
                         View
                       </button>
                     </td>
                   </tr>
                 ))}
-                {inquiries.length === 0 && (
+                {adminTickets.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-white/40 text-sm">No inquiries found.</td>
+                    <td colSpan={5} className="px-4 py-12 text-center text-white/40 text-sm">No tickets found.</td>
                   </tr>
                 )}
               </tbody>
@@ -719,26 +897,26 @@ export const AdminDashboard: React.FC = () => {
 
           {/* Mobile Cards */}
           <div className="md:hidden flex flex-col gap-4 bg-[#050505]">
-            {inquiries.map((inq) => (
-              <div key={inq.id} className="bg-[#111111] border border-white/5 p-4 rounded-lg flex flex-col gap-3">
+            {adminTickets.map((inq) => (
+              <div key={inq.ticket_id} className="bg-[#111111] border border-white/5 p-4 rounded-lg flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="font-bold text-white block">{inq.name}</span>
-                    <span className="text-xs text-white/50">{inq.created_at}</span>
+                    <span className="font-bold text-white block">{inq.full_name}</span>
+                    <span className="text-xs text-white/50">{new Date(inq.created_at).toLocaleString()}</span>
                   </div>
                   <StatusText status={inq.status} />
                 </div>
                 <div>
                   <span className="font-medium text-[#D4AF37] text-sm block">{inq.subject}</span>
                 </div>
-                <button onClick={() => openInquiryDrawer(inq.id)} className="w-full mt-2 flex items-center justify-center gap-2 bg-[#111111] text-white border border-white/30 hover:border-[#D4AF37] hover:text-[#D4AF37] py-2 rounded text-xs font-bold transition-colors">
+                <button onClick={() => openInquiryDrawer(inq.ticket_id)} className="w-full mt-2 flex items-center justify-center gap-2 bg-[#111111] text-white border border-white/30 hover:border-[#D4AF37] hover:text-[#D4AF37] py-2 rounded text-xs font-bold transition-colors">
                   View Details <ArrowRight size={14} />
                 </button>
               </div>
             ))}
-            {inquiries.length === 0 && (
+            {adminTickets.length === 0 && (
               <div className="py-12 text-center text-white/40 text-sm bg-[#111111] rounded-lg border border-white/5">
-                No inquiries found.
+                No tickets found.
               </div>
             )}
           </div>
@@ -748,12 +926,15 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderCarsPlaceholder = () => {
-    const filteredFleet = fleet.filter(c => {
-      if (activeFilter === 'Available') return c.status === 'Available';
-      if (activeFilter === 'Unavailable') return c.status === 'Booked' || c.status === 'Maintenance';
-      if (activeFilter === 'Archived') return c.status === 'Archived';
-      if (activeFilter === 'Maintenance') return c.status === 'Maintenance';
-      return c.status !== 'Archived'; // 'All' filters out Archived by default
+    if (adminCarsLoading) {
+      return <div className="text-white/50 text-sm py-12 text-center">Loading vehicles...</div>;
+    }
+
+    const filteredFleet = adminCars.filter(c => {
+      if (activeFilter === 'Available') return c.available && !c.is_deleted;
+      if (activeFilter === 'Unavailable') return !c.available && !c.is_deleted;
+      if (activeFilter === 'Archived') return c.is_deleted;
+      return !c.is_deleted; // 'All Active' filters out Archived by default
     });
 
     return (
@@ -763,13 +944,13 @@ export const AdminDashboard: React.FC = () => {
             <h2 className="text-xl font-bold text-white mb-1">Fleet Management</h2>
             <p className="text-white/50 text-sm">Manage vehicles, pricing, availability, and status.</p>
           </div>
-          <button className="bg-[#D4AF37] hover:bg-[#b5952f] text-black px-4 py-2 text-sm font-bold rounded transition-colors flex items-center gap-2">
+          <button onClick={openAddCarDrawer} className="bg-[#D4AF37] hover:bg-[#b5952f] text-black px-4 py-2 text-sm font-bold rounded transition-colors flex items-center gap-2">
             <Plus size={16} /> Add Car
           </button>
         </div>
 
         <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-          {['All Active', 'Available', 'Unavailable', 'Maintenance', 'Archived'].map(f => (
+          {['All Active', 'Available', 'Unavailable', 'Archived'].map(f => (
             <button 
               key={f} 
               onClick={() => setActiveFilter(f)}
@@ -784,14 +965,19 @@ export const AdminDashboard: React.FC = () => {
           {filteredFleet.map(car => (
             <div key={car.car_number} className="bg-[#111111] border border-white/10 p-5 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-white/20 transition-colors">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-16 bg-white/5 rounded overflow-hidden relative border border-white/10">
-                  <div className="absolute inset-0 flex items-center justify-center text-white/20"><Car size={24} /></div>
+                <div className="w-24 h-16 bg-white/5 rounded overflow-hidden relative border border-white/10 flex items-center justify-center">
+                  {car.images?.length > 0 ? (
+                    <img src={car.images[0].image_path} alt={car.model} className="w-full h-full object-cover opacity-80" />
+                  ) : (
+                    <div className="text-white/20"><Car size={24} /></div>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white mb-1">{car.brand} {car.model} <span className="text-[#D4AF37] text-sm font-medium ml-2">{car.year}</span></h3>
                   <div className="flex items-center gap-4 text-xs text-white/50">
                     <span className="bg-white/5 px-2 py-0.5 rounded font-mono">{car.car_number}</span>
                     <span>{car.transmission}</span>
+                    <span>{car.fuel_type}</span>
                     <span>{car.seats} Seats</span>
                   </div>
                 </div>
@@ -801,24 +987,19 @@ export const AdminDashboard: React.FC = () => {
                 <div className="flex items-center gap-4 w-full justify-between md:justify-end">
                   <div className="text-right">
                     <span className="block text-sm font-bold text-white">₹{car.price_per_day.toLocaleString()}/Day</span>
-                    <span className="block text-xs text-white/50">₹{car.price_per_km}/km</span>
+                    {car.price_per_km && <span className="block text-xs text-white/50">₹{car.price_per_km}/km</span>}
                   </div>
                   <div className="w-px h-8 bg-white/10 mx-2 hidden md:block"></div>
-                  <StatusText status={car.status === 'Maintenance' ? 'Pending' : car.status === 'Archived' ? 'Closed' : car.status === 'Booked' ? 'Confirmed' : 'Completed'} />
+                  <StatusText status={car.is_deleted ? 'Archived' : car.available ? 'Available' : 'Unavailable'} />
                 </div>
                 
                 <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
                   <button onClick={() => openEditCarDrawer(car)} className="flex-1 md:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs font-bold text-white transition-colors">
                     Edit
                   </button>
-                  {car.status !== 'Archived' && (
-                    <button onClick={() => handleMakeUnavailableClick(car)} className="flex-1 md:flex-none px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 rounded text-xs font-bold text-yellow-500 transition-colors">
-                      Make Unavailable
-                    </button>
-                  )}
-                  {car.status !== 'Archived' && (
-                    <button onClick={() => handleArchiveClick(car)} className="flex-1 md:flex-none px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded text-xs font-bold text-red-400 transition-colors">
-                      Archive
+                  {!car.is_deleted && (
+                    <button onClick={() => handleToggleAvailabilityClick(car)} className={`flex-1 md:flex-none px-4 py-2 ${car.available ? 'bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30 text-yellow-500' : 'bg-green-500/10 hover:bg-green-500/20 border-green-500/30 text-green-500'} border rounded text-xs font-bold transition-colors`}>
+                      {car.available ? 'Make Unavailable' : 'Make Available'}
                     </button>
                   )}
                 </div>
@@ -836,10 +1017,40 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderCustomersPlaceholder = () => {
-    const filteredCustomers = customersList.filter(c => {
-      if (activeFilter === 'Active') return c.status === 'Active' || c.status === 'VIP';
-      if (activeFilter === 'VIP') return c.status === 'VIP';
-      if (activeFilter === 'Blocked') return c.status === 'Blocked';
+    if (adminUsersLoading) {
+      return <div className="text-white/50 text-sm py-12 text-center">Loading customers...</div>;
+    }
+
+    const processedUsers = adminUsers.map(u => {
+      const totalBookings = u.bookings.length;
+      const totalSpent = u.bookings.reduce((sum, b) => sum + (b.amount_paid || 0), 0);
+      
+      let lastBooking = 'N/A';
+      if (u.bookings.length > 0) {
+        const sorted = [...u.bookings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const lastDate = new Date(sorted[0].created_at);
+        const diffDays = Math.floor((new Date().getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
+        if (diffDays === 0) lastBooking = 'Today';
+        else if (diffDays === 1) lastBooking = 'Yesterday';
+        else if (diffDays < 30) lastBooking = `${diffDays} Days Ago`;
+        else lastBooking = '1 month+ ago';
+      }
+
+      const isVIP = totalSpent > 50000 || totalBookings >= 5;
+
+      return {
+        ...u,
+        total_bookings: totalBookings,
+        total_spent: totalSpent,
+        last_booking: lastBooking,
+        is_vip: isVIP,
+      };
+    });
+
+    const filteredCustomers = processedUsers.filter(c => {
+      if (activeFilter === 'Active') return c.is_active && !c.is_blocked;
+      if (activeFilter === 'VIP') return c.is_vip && !c.is_blocked;
+      if (activeFilter === 'Blocked') return c.is_blocked;
       return true; // 'All'
     });
 
@@ -884,12 +1095,13 @@ export const AdminDashboard: React.FC = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-white text-sm block">{cust.name}</span>
-                        {cust.status === 'VIP' && <span title="VIP Customer" className="text-xl leading-none -mt-1">👑</span>}
+                        {cust.is_vip && <span title="VIP Customer" className="text-xl leading-none -mt-1">👑</span>}
+                        {cust.is_blocked && <span className="text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded ml-2">BLOCKED</span>}
                       </div>
-                      <span className="text-[10px] text-white/40 uppercase font-mono">{cust.id}</span>
+                      <span className="text-[10px] text-white/40 uppercase font-mono">CUST-{cust.id}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="font-medium text-white/80 text-sm block">{cust.phone}</span>
+                      <span className="font-medium text-white/80 text-sm block">{cust.phone || 'N/A'}</span>
                       <span className="text-xs text-[#D4AF37] hover:underline cursor-pointer">{cust.email}</span>
                     </td>
                     <td className="px-4 py-4 text-center">
@@ -924,9 +1136,10 @@ export const AdminDashboard: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-white block text-lg">{cust.name}</span>
-                    {cust.status === 'VIP' && <span title="VIP Customer" className="text-xl leading-none">👑</span>}
+                    {cust.is_vip && <span title="VIP Customer" className="text-xl leading-none">👑</span>}
+                    {cust.is_blocked && <span className="text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded ml-2">BLOCKED</span>}
                   </div>
-                  <span className="text-[10px] text-white/40 uppercase font-mono mt-1">{cust.id}</span>
+                  <span className="text-[10px] text-white/40 uppercase font-mono mt-1">CUST-{cust.id}</span>
                 </div>
                 <div className="flex justify-between items-center bg-[#0A0A0A] p-3 rounded border border-white/5 mt-1">
                   <div className="text-center">
@@ -1055,7 +1268,16 @@ export const AdminDashboard: React.FC = () => {
             />
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <NotificationBell
+              unreadCount={notifications.unreadCount}
+              notifications={notifications.notifications}
+              panelOpen={notifications.panelOpen}
+              onOpen={notifications.openPanel}
+              onClose={notifications.closePanel}
+              onAction={handleAdminNotificationAction}
+              onMarkAllRead={notifications.markAllRead}
+            />
             <button className="bg-[#D4AF37] hover:bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-colors flex items-center gap-1">
               <Plus size={14} /> Add Booking
             </button>
@@ -1103,43 +1325,50 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="p-6 overflow-y-auto flex-1">
                 {/* Booking Summary */}
-                <div className="bg-[#111111] p-5 rounded-lg border border-white/5 mb-8">
-                  <h3 className="text-xs uppercase text-white/40 font-bold tracking-widest mb-4">Booking Details</h3>
-                  <div className="grid grid-cols-2 gap-y-4">
-                    <div>
-                      <span className="text-[10px] text-white/30 uppercase block mb-1">Booking ID</span>
-                      <span className="text-sm text-white font-medium">{selectedBookingId}</span>
+                {(() => {
+                  const b = adminBookings.find(x => x.id.toString() === selectedBookingId);
+                  if(!b) return null;
+                  return (
+                    <div className="bg-[#111111] p-5 rounded-lg border border-white/5 mb-8">
+                      <h3 className="text-xs uppercase text-white/40 font-bold tracking-widest mb-4">Booking Details</h3>
+                      <div className="grid grid-cols-2 gap-y-4">
+                        <div>
+                          <span className="text-[10px] text-white/30 uppercase block mb-1">Booking ID</span>
+                          <span className="text-sm text-white font-medium">{b.booking_id}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-white/30 uppercase block mb-1">Customer</span>
+                          <span className="text-sm text-white font-medium">{b.user.name}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-white/30 uppercase block mb-1">Vehicle</span>
+                          <span className="text-sm text-[#D4AF37] font-medium">{b.car.brand} {b.car.model}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-white/30 uppercase block mb-1">Dates</span>
+                          <span className="text-sm text-white font-medium truncate pr-2">{new Date(b.start_date).toLocaleDateString()} - {new Date(b.end_date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-white/30 uppercase block mb-1">Customer</span>
-                      <span className="text-sm text-white font-medium">{bookings.find(b => b.id === selectedBookingId)?.customer}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-white/30 uppercase block mb-1">Vehicle</span>
-                      <span className="text-sm text-[#D4AF37] font-medium">{bookings.find(b => b.id === selectedBookingId)?.vehicle}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-white/30 uppercase block mb-1">Pickup</span>
-                      <span className="text-sm text-white font-medium truncate pr-2">{bookings.find(b => b.id === selectedBookingId)?.pickup}</span>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Driver Selection Flow */}
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-sm font-bold text-white mb-4">Select Existing Driver</h3>
                     <div className="space-y-2">
-                      {['Ramesh', 'Kiran', 'Ajay', 'Suresh'].map(d => (
+                      {availableDrivers.length === 0 && <p className="text-xs text-white/50">No available drivers found.</p>}
+                      {availableDrivers.map(d => (
                         <div 
-                          key={d} 
-                          onClick={() => { setDriverMode('select'); setSelectedDriver(d); }}
-                          className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${driverMode === 'select' && selectedDriver === d ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-white/10 bg-[#111111] hover:border-white/20'}`}
+                          key={d.id} 
+                          onClick={() => { setDriverMode('select'); setSelectedDriver(d.driver_id); }}
+                          className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${driverMode === 'select' && selectedDriver === d.driver_id ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-white/10 bg-[#111111] hover:border-white/20'}`}
                         >
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${driverMode === 'select' && selectedDriver === d ? 'border-[#D4AF37]' : 'border-white/30'}`}>
-                            {driverMode === 'select' && selectedDriver === d && <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${driverMode === 'select' && selectedDriver === d.driver_id ? 'border-[#D4AF37]' : 'border-white/30'}`}>
+                            {driverMode === 'select' && selectedDriver === d.driver_id && <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
                           </div>
-                          <span className="text-sm text-white font-medium">{d}</span>
+                          <span className="text-sm text-white font-medium">{d.driver_name}</span>
                           <span className="ml-auto text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded uppercase tracking-wider">Available</span>
                         </div>
                       ))}
@@ -1161,7 +1390,7 @@ export const AdminDashboard: React.FC = () => {
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${driverMode === 'create' ? 'border-[#D4AF37]' : 'border-white/30'}`}>
                           {driverMode === 'create' && <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
                         </div>
-                        <span className="text-sm font-bold text-white">+ Add New Driver</span>
+                        <span className="text-sm font-bold text-white">+ Assign Temp Driver</span>
                       </div>
                     </button>
 
@@ -1188,10 +1417,10 @@ export const AdminDashboard: React.FC = () => {
                   </button>
                   <button 
                     onClick={handleAssignDriver}
-                    disabled={driverMode === 'select' ? !selectedDriver : !newDriver.name}
+                    disabled={driverMode === 'select' ? !selectedDriver : !newDriver.name || !newDriver.phone}
                     className="flex-1 py-3 bg-[#D4AF37] hover:bg-white disabled:bg-[#D4AF37]/50 disabled:cursor-not-allowed text-black text-sm font-bold rounded-md transition-colors flex justify-center items-center gap-2"
                   >
-                    {driverMode === 'create' ? 'Create & Assign' : 'Assign Driver'}
+                    Assign
                   </button>
                 </div>
               </div>
@@ -1228,23 +1457,23 @@ export const AdminDashboard: React.FC = () => {
               <div className="p-6 overflow-y-auto flex-1 space-y-8">
                 {/* Customer Details */}
                 <div className="bg-[#111111] p-5 rounded-lg border border-white/5">
-                  <h3 className="text-sm font-bold text-white mb-4">{inquiries.find(i => i.id === selectedInquiryId)?.name}</h3>
+                  <h3 className="text-sm font-bold text-white mb-4">{adminTickets.find(i => i.ticket_id === selectedInquiryId)?.full_name}</h3>
                   <div className="grid grid-cols-2 gap-y-4">
                     <div>
                       <span className="text-[10px] text-white/30 uppercase block mb-1">Email</span>
-                      <span className="text-sm text-white font-medium">{inquiries.find(i => i.id === selectedInquiryId)?.email}</span>
+                      <span className="text-sm text-white font-medium">{adminTickets.find(i => i.ticket_id === selectedInquiryId)?.email}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-white/30 uppercase block mb-1">Phone</span>
-                      <span className="text-sm text-white font-medium">{inquiries.find(i => i.id === selectedInquiryId)?.phone}</span>
+                      <span className="text-sm text-white font-medium">{adminTickets.find(i => i.ticket_id === selectedInquiryId)?.phone_number}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-white/30 uppercase block mb-1">Status</span>
-                      <StatusText status={inquiries.find(i => i.id === selectedInquiryId)?.status || 'Opened'} />
+                      <StatusText status={adminTickets.find(i => i.ticket_id === selectedInquiryId)?.status || 'NEW'} />
                     </div>
                     <div>
                       <span className="text-[10px] text-white/30 uppercase block mb-1">Submitted</span>
-                      <span className="text-sm text-white font-medium truncate pr-2">{inquiries.find(i => i.id === selectedInquiryId)?.created_at}</span>
+                      <span className="text-sm text-white font-medium truncate pr-2">{adminTickets.find(i => i.ticket_id === selectedInquiryId)?.created_at ? new Date(adminTickets.find(i => i.ticket_id === selectedInquiryId).created_at).toLocaleString() : ''}</span>
                     </div>
                   </div>
                 </div>
@@ -1271,20 +1500,20 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* The Message */}
                 <div>
-                  <h3 className="text-lg font-bold text-[#D4AF37] mb-2">{inquiries.find(i => i.id === selectedInquiryId)?.subject}</h3>
+                  <h3 className="text-lg font-bold text-[#D4AF37] mb-2">{adminTickets.find(i => i.ticket_id === selectedInquiryId)?.subject}</h3>
                   <p className="text-white/70 text-sm leading-relaxed bg-white/5 p-4 rounded-lg">
-                    {inquiries.find(i => i.id === selectedInquiryId)?.message}
+                    {adminTickets.find(i => i.ticket_id === selectedInquiryId)?.message}
                   </p>
                 </div>
 
                 {/* The Reply Area */}
                 <div>
                   <h3 className="text-[10px] text-white/30 uppercase block mb-2 font-bold tracking-widest">Reply</h3>
-                  {inquiries.find(i => i.id === selectedInquiryId)?.status === 'Replied' ? (
+                  {adminTickets.find(i => i.ticket_id === selectedInquiryId)?.status === 'RESOLVED' || adminTickets.find(i => i.ticket_id === selectedInquiryId)?.admin_reply ? (
                     <div className="bg-[#111111] p-4 rounded-lg border border-green-500/20">
                       <span className="text-[10px] text-green-400 uppercase font-bold tracking-widest block mb-2">Admin Reply</span>
                       <p className="text-white/70 text-sm leading-relaxed">
-                        {inquiries.find(i => i.id === selectedInquiryId)?.admin_reply}
+                        {adminTickets.find(i => i.ticket_id === selectedInquiryId)?.admin_reply}
                       </p>
                     </div>
                   ) : (
@@ -1298,7 +1527,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {inquiries.find(i => i.id === selectedInquiryId)?.status !== 'Replied' && (
+              {adminTickets.find(i => i.ticket_id === selectedInquiryId)?.status !== 'RESOLVED' && !adminTickets.find(i => i.ticket_id === selectedInquiryId)?.admin_reply && (
                 <div className="p-6 border-t border-white/10 bg-[#0A0A0A]">
                   <div className="flex gap-3">
                     <button onClick={() => setIsInquiryDrawerOpen(false)} className="flex-1 py-3 bg-[#111111] hover:bg-white/5 border border-white/10 text-white text-sm font-bold rounded-md transition-colors">
@@ -1319,9 +1548,9 @@ export const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Side Drawer for Edit Car */}
+      {/* Side Drawer for Add / Edit Car */}
       <AnimatePresence>
-        {isCarDrawerOpen && selectedCar && (
+        {isCarDrawerOpen && editCarState && (
           <>
             <motion.div 
               initial={{ opacity: 0 }}
@@ -1337,10 +1566,10 @@ export const AdminDashboard: React.FC = () => {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 w-full md:w-[600px] h-full bg-[#0B0B0C] border-l border-white/10 z-[101] flex flex-col shadow-2xl"
             >
-              <div className="flex justify-between items-center p-6 border-b border-white/10 bg-[#090909]">
+              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#0A0A0A] sticky top-0 z-10">
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-1">Edit Vehicle</h2>
-                  <p className="text-xs text-white/50">{selectedCar.car_number}</p>
+                  <h2 className="text-xl font-bold text-white">{selectedCar ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
+                  {selectedCar && <p className="text-sm text-white/50">{selectedCar.brand} {selectedCar.model}</p>}
                 </div>
                 <button onClick={() => setIsCarDrawerOpen(false)} className="text-white/50 hover:text-white transition-colors">
                   <X size={24} />
@@ -1354,20 +1583,24 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4">Basic Details</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] text-white/40 uppercase block mb-1">Vehicle Number</label>
-                      <input type="text" defaultValue={selectedCar.car_number} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" disabled />
+                      <label className="text-[10px] text-white/40 uppercase block mb-1">Vehicle Number {selectedCar ? '(Read Only)' : ''}</label>
+                      <input type="text" value={editCarState.car_number || ''} onChange={e => setEditCarState({...editCarState, car_number: e.target.value.toUpperCase()})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" disabled={!!selectedCar} />
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Brand</label>
-                      <input type="text" defaultValue={selectedCar.brand} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="text" value={editCarState.brand || ''} onChange={e => setEditCarState({...editCarState, brand: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Model</label>
-                      <input type="text" defaultValue={selectedCar.model} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="text" value={editCarState.model || ''} onChange={e => setEditCarState({...editCarState, model: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Year</label>
-                      <input type="number" defaultValue={selectedCar.year} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="number" value={editCarState.year || ''} onChange={e => setEditCarState({...editCarState, year: parseInt(e.target.value) || new Date().getFullYear()})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-[10px] text-white/40 uppercase block mb-1">Description</label>
+                      <textarea value={editCarState.description || ''} onChange={e => setEditCarState({...editCarState, description: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] h-20 resize-none"></textarea>
                     </div>
                   </div>
                 </section>
@@ -1380,23 +1613,23 @@ export const AdminDashboard: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Fuel Type</label>
-                      <select defaultValue={selectedCar.fuel_type} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]">
-                        <option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option>
+                      <select value={editCarState.fuel_type || ''} onChange={e => setEditCarState({...editCarState, fuel_type: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]">
+                        <option value="Petrol">Petrol</option><option value="Diesel">Diesel</option><option value="Electric">Electric</option><option value="Hybrid">Hybrid</option>
                       </select>
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Transmission</label>
-                      <select defaultValue={selectedCar.transmission} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]">
-                        <option>Automatic</option><option>Manual</option>
+                      <select value={editCarState.transmission || ''} onChange={e => setEditCarState({...editCarState, transmission: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]">
+                        <option value="Automatic">Automatic</option><option value="Manual">Manual</option>
                       </select>
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Seats</label>
-                      <input type="number" defaultValue={selectedCar.seats} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="number" value={editCarState.seats || ''} onChange={e => setEditCarState({...editCarState, seats: parseInt(e.target.value) || 4})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-white/40 uppercase block mb-1">Color</label>
-                      <input type="text" defaultValue={selectedCar.color} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <label className="text-[10px] text-white/40 uppercase block mb-1">Location</label>
+                      <input type="text" value={editCarState.location || ''} onChange={e => setEditCarState({...editCarState, location: e.target.value})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                   </div>
                 </section>
@@ -1409,18 +1642,34 @@ export const AdminDashboard: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Price Per Day (₹)</label>
-                      <input type="number" defaultValue={selectedCar.price_per_day} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="number" value={editCarState.price_per_day || ''} onChange={e => setEditCarState({...editCarState, price_per_day: parseFloat(e.target.value) || 0})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                     <div>
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Price Per KM (₹)</label>
-                      <input type="number" defaultValue={selectedCar.price_per_km} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
+                      <input type="number" value={editCarState.price_per_km || ''} onChange={e => setEditCarState({...editCarState, price_per_km: parseFloat(e.target.value) || 0})} className="w-full bg-[#111111] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37]" />
                     </div>
                     <div className="col-span-2">
                       <label className="text-[10px] text-white/40 uppercase block mb-1">Availability Type</label>
                       <div className="flex gap-2">
-                        {['Rental', 'Pickup', 'Both'].map(t => (
-                          <button key={t} className={`flex-1 py-2 rounded text-xs font-bold border transition-colors ${selectedCar.availability_type === t ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-[#111111] border-white/10 text-white/40 hover:text-white'}`}>
-                            {t}
+                        {[
+                          { label: 'Rental', value: 'Rental' },
+                          { label: 'Pickup', value: 'Outstation' },
+                          { label: 'Both', value: 'Both' }
+                        ].map(t => (
+                          <button 
+                            key={t.value} 
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setEditCarState({...editCarState, availability_type: t.value}) }} 
+                            className={`flex-1 py-2 rounded text-xs font-bold border transition-colors ${
+                              (editCarState.availability_type === t.value || 
+                              (t.value === 'Outstation' && editCarState.availability_type === 'Pickup') || 
+                              (editCarState.availability_type?.toUpperCase() === t.value.toUpperCase()) || 
+                              (editCarState.availability_type === 'PICKUP' && t.value === 'Outstation')) 
+                              ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' 
+                              : 'bg-[#111111] border-white/10 text-white/40 hover:text-white'
+                            }`}
+                          >
+                            {t.label}
                           </button>
                         ))}
                       </div>
@@ -1434,9 +1683,13 @@ export const AdminDashboard: React.FC = () => {
                 <section>
                   <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4">Images</h3>
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedCar.images?.map((img:string, i:number) => (
+                    {editCarState.images?.map((img:any, i:number) => (
                       <div key={i} className="aspect-video bg-[#111111] border border-white/10 rounded relative group overflow-hidden flex items-center justify-center">
-                        <span className="text-white/20 text-[10px]">Image {i+1}</span>
+                        {img.image_path ? (
+                          <img src={img.image_path} alt="car" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white/20 text-[10px]">Image {i+1}</span>
+                        )}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
                           <button className="text-xs text-white bg-white/20 px-2 py-1 rounded hover:bg-white/40">Replace</button>
                           {i > 0 && <button className="text-[10px] text-red-400 hover:text-red-300">Delete</button>}
@@ -1451,28 +1704,6 @@ export const AdminDashboard: React.FC = () => {
                   <p className="text-[10px] text-white/30 mt-2">Minimum 1 image required. First image is the cover.</p>
                 </section>
 
-                <hr className="border-white/5" />
-
-                {/* Upcoming Bookings */}
-                <section>
-                  <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4">Upcoming Bookings ({selectedCar.upcoming_bookings?.length || 0})</h3>
-                  {selectedCar.upcoming_bookings?.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedCar.upcoming_bookings.map((b:any, i:number) => (
-                        <div key={i} className="flex justify-between items-center bg-[#111111] border border-white/5 p-3 rounded">
-                          <div>
-                            <span className="block text-sm text-white font-bold">{b.date}</span>
-                            <span className="text-xs text-white/50">{b.type}</span>
-                          </div>
-                          <StatusText status={b.status} />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-white/40 italic">No upcoming bookings for this vehicle.</p>
-                  )}
-                </section>
-
               </div>
 
               <div className="p-6 border-t border-white/10 bg-[#0A0A0A]">
@@ -1480,8 +1711,8 @@ export const AdminDashboard: React.FC = () => {
                   <button onClick={() => setIsCarDrawerOpen(false)} className="flex-1 py-3 bg-[#111111] hover:bg-white/5 border border-white/10 text-white text-sm font-bold rounded-md transition-colors">
                     Cancel
                   </button>
-                  <button onClick={() => setIsCarDrawerOpen(false)} className="flex-1 py-3 bg-[#D4AF37] hover:bg-white text-black text-sm font-bold rounded-md transition-colors">
-                    Save Changes
+                  <button onClick={handleUpdateCarSubmit} className="flex-1 py-3 bg-[#D4AF37] hover:bg-white text-black text-sm font-bold rounded-md transition-colors">
+                    {selectedCar ? 'Save Changes' : 'Create Vehicle'}
                   </button>
                 </div>
               </div>
@@ -1696,6 +1927,14 @@ export const AdminDashboard: React.FC = () => {
                     <button className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded flex items-center justify-center gap-2 text-xs font-bold text-white transition-colors">
                       <MessageSquare size={14} /> Send Email
                     </button>
+                    {!selectedCustomer.is_blocked && (
+                      <button 
+                        onClick={() => { setBlockReason(''); setIsBlockModalOpen(true); }}
+                        className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded flex items-center justify-center gap-2 text-xs font-bold text-red-500 transition-colors"
+                      >
+                        Block User
+                      </button>
+                    )}
                   </div>
                 </section>
 
@@ -1718,23 +1957,26 @@ export const AdminDashboard: React.FC = () => {
                 </section>
 
                 {/* Ongoing Ride Alert */}
-                {selectedCustomer.ongoing_ride && (
-                  <section className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-4 rounded-lg flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shrink-0">
-                      <Car size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-[#D4AF37] mb-1">Ongoing Ride</h4>
-                      <p className="text-xs text-[#D4AF37]/80">
-                        {selectedCustomer.ongoing_ride.type} • {selectedCustomer.ongoing_ride.vehicle}
-                      </p>
-                      <p className="text-xs text-[#D4AF37]/80 mt-1">
-                        Driver: <strong>{selectedCustomer.ongoing_ride.driver}</strong>
-                      </p>
-                    </div>
-                    <StatusText status={selectedCustomer.ongoing_ride.status} />
-                  </section>
-                )}
+                {selectedCustomer.bookings.find((b:any) => b.status === 'ONGOING') && (() => {
+                  const ongoing = selectedCustomer.bookings.find((b:any) => b.status === 'ONGOING');
+                  return (
+                    <section className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-4 rounded-lg flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shrink-0">
+                        <Car size={16} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-[#D4AF37] mb-1">Ongoing Ride</h4>
+                        <p className="text-xs text-[#D4AF37]/80">
+                          {ongoing.booking_type} • {ongoing.car?.brand} {ongoing.car?.model}
+                        </p>
+                        <p className="text-xs text-[#D4AF37]/80 mt-1">
+                          Driver: <strong>{ongoing.driver_name || 'Self Driven'}</strong>
+                        </p>
+                      </div>
+                      <StatusText status={ongoing.status} />
+                    </section>
+                  );
+                })()}
 
                 <hr className="border-white/5" />
 
@@ -1752,13 +1994,13 @@ export const AdminDashboard: React.FC = () => {
                           >
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-mono text-white/50">{booking.id}</span>
-                                <span className="text-sm font-bold text-white">{booking.type}</span>
+                                <span className="text-xs font-mono text-white/50">{booking.booking_id}</span>
+                                <span className="text-sm font-bold text-white">{booking.booking_type}</span>
                               </div>
                               <div className="flex items-center gap-3 text-xs text-white/40">
-                                <span>{booking.vehicle}</span>
+                                <span>{booking.car?.brand} {booking.car?.model}</span>
                                 <span>•</span>
-                                <span>{booking.date}</span>
+                                <span>{new Date(booking.created_at).toLocaleDateString()}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -1777,25 +2019,29 @@ export const AdminDashboard: React.FC = () => {
                                 className="border-t border-white/5 bg-[#0A0A0A]"
                               >
                                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <span className="text-[10px] text-white/30 uppercase block mb-1">Pickup</span>
-                                    <span className="text-sm text-white">{booking.pickup}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] text-white/30 uppercase block mb-1">Destination</span>
-                                    <span className="text-sm text-white">{booking.destination}</span>
-                                  </div>
+                                  {booking.pickup_location && (
+                                    <>
+                                      <div>
+                                        <span className="text-[10px] text-white/30 uppercase block mb-1">Pickup</span>
+                                        <span className="text-sm text-white">{booking.pickup_location}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-[10px] text-white/30 uppercase block mb-1">Destination</span>
+                                        <span className="text-sm text-white">{booking.drop_location}</span>
+                                      </div>
+                                    </>
+                                  )}
                                   <div>
                                     <span className="text-[10px] text-white/30 uppercase block mb-1">Driver</span>
-                                    <span className="text-sm text-white">{booking.driver}</span>
+                                    <span className="text-sm text-white">{booking.driver_name || 'None'}</span>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-white/30 uppercase block mb-1">Vehicle No.</span>
-                                    <span className="text-sm text-white font-mono">{booking.vehicle_no}</span>
+                                    <span className="text-sm text-white font-mono">{booking.car?.car_number}</span>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-white/30 uppercase block mb-1">Payment</span>
-                                    <span className="text-sm text-white">{booking.payment} (₹{booking.amount.toLocaleString()})</span>
+                                    <span className="text-sm text-white">{booking.payment_channel} (₹{booking.total_amount?.toLocaleString()})</span>
                                   </div>
                                 </div>
                               </motion.div>
@@ -1807,7 +2053,6 @@ export const AdminDashboard: React.FC = () => {
                   ) : (
                     <div className="p-6 text-center border border-white/5 rounded bg-[#111111]">
                       <p className="text-white/40 text-sm">No bookings yet.</p>
-                      <p className="text-white/30 text-xs mt-1">Joined {selectedCustomer.joined_date}</p>
                     </div>
                   )}
                 </section>
@@ -1817,7 +2062,7 @@ export const AdminDashboard: React.FC = () => {
                 {/* Support History */}
                 <section>
                   <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4">Support History</h3>
-                  {selectedCustomer.support_history.length > 0 ? (
+                  {selectedCustomer.support_history && selectedCustomer.support_history.length > 0 ? (
                     <div className="space-y-3">
                       {selectedCustomer.support_history.map((support:any, i:number) => (
                         <div key={i} className="flex justify-between items-start bg-[#111111] border border-white/5 p-3 rounded">
@@ -1839,9 +2084,9 @@ export const AdminDashboard: React.FC = () => {
           </>
         )}
       </AnimatePresence>
-      {/* Reject Cancel Request Modal */}
+      {/* Review Cancel Request Modal */}
       <AnimatePresence>
-        {isCancelRejectModalOpen && (
+        {isReviewCancelModalOpen && bookingToReview && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -1850,26 +2095,92 @@ export const AdminDashboard: React.FC = () => {
               className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative"
             >
               <div className="p-6 border-b border-white/5 flex justify-between items-center">
-                <h3 className="text-xl font-bold text-white">Reject Cancellation</h3>
-                <button onClick={() => setIsCancelRejectModalOpen(false)} className="text-white/50 hover:text-white transition-colors">
+                <h3 className="text-xl font-bold text-white">Review Cancellation</h3>
+                <button onClick={() => setIsReviewCancelModalOpen(false)} className="text-white/50 hover:text-white transition-colors">
                   <X size={24} />
                 </button>
               </div>
-              <div className="p-6 space-y-4">
-                <p className="text-sm text-white/70">Please provide a reason for rejecting this cancellation request.</p>
-                <textarea
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#D4AF37]/50 resize-none min-h-[100px]"
-                  placeholder="E.g., Outside of cancellation window..."
-                  value={cancelRejectReason}
-                  onChange={(e) => setCancelRejectReason(e.target.value)}
-                />
+              <div className="p-6 space-y-6">
+                <div>
+                  <span className="text-[10px] text-white/30 uppercase font-bold tracking-widest block mb-1">Customer Reason</span>
+                  <p className="text-sm text-white/90 leading-relaxed bg-[#050505] border border-white/5 p-4 rounded-lg">
+                    {bookingToReview.cancel_reason || "No reason provided by the customer."}
+                  </p>
+                </div>
+
+                {isRejectMode && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                    <span className="text-[10px] text-red-400 uppercase font-bold tracking-widest block mb-2 mt-4">Provide Rejection Reason</span>
+                    <textarea
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-red-500/50 resize-none min-h-[100px]"
+                      placeholder="E.g., Outside of cancellation window..."
+                      value={cancelRejectReason}
+                      onChange={(e) => setCancelRejectReason(e.target.value)}
+                    />
+                  </motion.div>
+                )}
               </div>
               <div className="p-6 bg-black/40 border-t border-white/5 flex justify-end gap-3">
-                <button onClick={() => setIsCancelRejectModalOpen(false)} className="px-6 py-2 rounded font-bold text-sm bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10">
+                {isRejectMode ? (
+                  <>
+                    <button onClick={() => setIsRejectMode(false)} className="px-6 py-2 rounded font-bold text-sm bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10">
+                      Back
+                    </button>
+                    <button onClick={handleRejectCancel} disabled={!cancelRejectReason.trim()} className="px-6 py-2 rounded font-bold text-sm bg-red-500/90 hover:bg-red-500 text-white transition-colors disabled:opacity-50">
+                      Confirm Rejection
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setIsRejectMode(true)} className="px-6 py-2 rounded font-bold text-sm bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors border border-red-500/30">
+                      Reject Request
+                    </button>
+                    <button onClick={() => handleApproveCancel(bookingToReview.id)} className="px-6 py-2 rounded font-bold text-sm bg-green-500/90 hover:bg-green-500 text-white transition-colors">
+                      Approve Cancellation
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Block User Modal */}
+      <AnimatePresence>
+        {isBlockModalOpen && (
+          <div className="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#111111] border border-red-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl shadow-red-500/10"
+            >
+              <h3 className="text-xl font-bold text-red-500 mb-2">Block User</h3>
+              <p className="text-white/60 text-sm mb-4">
+                Are you sure you want to block <strong>{selectedCustomer?.name}</strong>? They will no longer be able to log in or book rides.
+              </p>
+              
+              <div className="mb-6">
+                <label className="text-xs text-white/50 block mb-2 uppercase tracking-wider font-bold">Reason for Blocking</label>
+                <textarea 
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  placeholder="e.g. Fraudulent activity, inappropriate behavior..."
+                  className="w-full h-24 bg-[#050505] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setIsBlockModalOpen(false)} className="flex-1 py-3 bg-[#050505] hover:bg-white/5 border border-white/10 text-white text-sm font-bold rounded transition-colors">
                   Cancel
                 </button>
-                <button onClick={handleRejectCancel} className="px-6 py-2 rounded font-bold text-sm bg-red-500/90 hover:bg-red-500 text-white transition-colors">
-                  Confirm Rejection
+                <button 
+                  onClick={handleBlockUserSubmit}
+                  disabled={!blockReason.trim()}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-400 disabled:bg-red-500/50 disabled:cursor-not-allowed text-white text-sm font-bold rounded transition-colors"
+                >
+                  Confirm Block
                 </button>
               </div>
             </motion.div>
@@ -1905,6 +2216,59 @@ export const AdminDashboard: React.FC = () => {
           {isFabOpen ? <X size={24} /> : <Plus size={24} />}
         </button>
       </div>
+
+      <AnimatePresence>
+        {isCarStatusModalOpen && selectedCarForStatus && (
+          <div className="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#111111] border border-white/10 rounded-xl max-w-md w-full p-6 shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Change Availability</h3>
+              <p className="text-white/60 text-sm mb-4">
+                You are about to make <strong>{selectedCarForStatus.brand} {selectedCarForStatus.model} ({selectedCarForStatus.car_number})</strong> {selectedCarForStatus.available ? <span className="text-yellow-500">Unavailable</span> : <span className="text-green-500">Available</span>}.
+              </p>
+              
+              {selectedCarForStatus.available && (
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-3">Upcoming Bookings</h4>
+                  {selectedCarForStatus.upcoming_bookings && selectedCarForStatus.upcoming_bookings.length > 0 ? (
+                    <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                      {selectedCarForStatus.upcoming_bookings.map((b) => (
+                        <div key={b.booking_id} className="bg-[#0A0A0A] border border-white/5 p-3 rounded flex justify-between items-center">
+                          <div>
+                            <span className="block text-xs font-mono text-white/50">{b.booking_id}</span>
+                            <span className="block text-sm text-white font-bold">{b.start_date} to {b.end_date}</span>
+                          </div>
+                          <StatusText status={b.status} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-[#050505] border border-white/5 p-4 rounded text-center">
+                      <p className="text-white/50 text-sm italic">No upcoming bookings. Safe to make unavailable.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button onClick={() => setIsCarStatusModalOpen(false)} className="flex-1 py-3 bg-[#050505] hover:bg-white/5 border border-white/10 text-white text-sm font-bold rounded transition-colors">
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleConfirmToggleAvailability}
+                  className={`flex-1 py-3 text-white text-sm font-bold rounded transition-colors ${selectedCarForStatus.available ? 'bg-yellow-600 hover:bg-yellow-500 text-black' : 'bg-green-600 hover:bg-green-500'}`}
+                >
+                  Confirm
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

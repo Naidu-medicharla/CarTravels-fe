@@ -1,4 +1,4 @@
-const BASE_URL = 'https://deep-clouds-allow.loca.lt';
+const BASE_URL = 'http://localhost:8000';
 
 /**
  * A fetch wrapper for authenticated requests.
@@ -32,6 +32,30 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface TicketOut {
+  ticket_id: number;
+  user_id?: number | null;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  subject: string;
+  message: string;
+  admin_reply?: string | null;
+  status: string; // "NEW", "IN_PROGRESS", "RESOLVED", "CLOSED"
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationItem {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  reference_id?: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
 export interface Car {
   id: number;
   car_number: string;
@@ -57,6 +81,99 @@ export interface BookingPreview {
   car_price: number;
   driver_charges: number;
   total_amount: number;
+}
+
+export interface AdminBooking {
+  id: number;
+  booking_id: string;
+  booking_type: string;
+  status: string;
+  car_charges: number;
+  discount: number;
+  total_amount_before_discount: number;
+  total_amount: number;
+  amount_paid: number;
+  paid_by: string;
+  payment_channel: string;
+  payment_status: string;
+  start_date: string;
+  end_date: string;
+  num_days: number;
+  driver_required: boolean;
+  driver_charges: number;
+  pickup_location: string | null;
+  drop_location: string | null;
+  pickup_date: string | null;
+  distance_km: number | null;
+  driver_id: string | null;
+  driver_name: string | null;
+  driver_phone: string | null;
+  cancel_reason: string | null;
+  admin_reject_reason: string | null;
+  is_trip_completed: boolean;
+  is_rated: boolean;
+  rating: number | null;
+  created_at: string;
+  updated_at: string;
+  car: {
+    car_number: string;
+    brand: string;
+    model: string;
+  };
+  user: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface UpcomingBooking {
+  booking_id: string;
+  booking_type: string;
+  status: string;
+  start_date: string | null;
+  end_date: string | null;
+  pickup_date: string | null;
+}
+
+export interface AdminCarOut {
+  id: number;
+  car_number: string;
+  brand: string;
+  model: string;
+  year: number;
+  fuel_type: string;
+  transmission: string;
+  price_per_day: number;
+  price_per_km: number | null;
+  seats: number;
+  location: string;
+  description: string | null;
+  availability_type: string;
+  available: boolean;
+  is_deleted: boolean;
+  images: any[];
+  upcoming_bookings: UpcomingBooking[];
+}
+
+export interface AvailableDriver {
+  id: number;
+  driver_id: string;
+  driver_name: string;
+  mobile_number: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUserDetails {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  is_active: boolean;
+  is_blocked: boolean;
+  block_reason: string | null;
+  bookings: AdminBooking[];
 }
 
 export interface DashboardDetailsResponse {
@@ -355,11 +472,10 @@ export const api = {
       throw new Error(errorMessage);
     }
     return response.json();
-    return response.json();
   },
 
   getDashboardDetails: async (token: string): Promise<DashboardDetailsResponse> => {
-    const response = await authFetch(`${BASE_URL}/dashboard/details`, {
+    const response = await authFetch(`${BASE_URL}/admin/dashboard/details`, {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -375,5 +491,355 @@ export const api = {
       throw new Error(errorMessage);
     }
     return response.json();
+  },
+
+  getAdminBookings: async (token: string): Promise<AdminBooking[]> => {
+    const response = await authFetch(`${BASE_URL}/admin/bookings`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch admin bookings';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  getAvailableDrivers: async (token: string, startDate: string, endDate: string): Promise<AvailableDriver[]> => {
+    const response = await authFetch(`${BASE_URL}/admin/drivers/available?start_date=${startDate}&end_date=${endDate}`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch available drivers';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  assignDriver: async (token: string, bookingId: number, driverId: string, driverName: string, driverPhone?: string): Promise<any> => {
+    const payload: any = { driver_id: driverId, driver_name: driverName };
+    if (driverPhone) {
+      payload.driver_phone = driverPhone;
+    }
+    const response = await authFetch(`${BASE_URL}/admin/bookings/${bookingId}/assign-driver`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to assign driver';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  getAdminUsersDetails: async (token: string): Promise<AdminUserDetails[]> => {
+    const response = await authFetch(`${BASE_URL}/admin/users/details`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch admin users details';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  blockUser: async (token: string, email: string, reason: string): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/admin/users/${encodeURIComponent(email)}/block`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: JSON.stringify({ reason })
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to block user';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  getAdminCars: async (token: string): Promise<AdminCarOut[]> => {
+    const response = await authFetch(`${BASE_URL}/admin/all/cars`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch admin cars';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  makeCarAvailable: async (token: string, car_number: string): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/admin/change-car-status/${encodeURIComponent(car_number)}/available`, {
+      method: 'PATCH',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to make car available';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  makeCarUnavailable: async (token: string, car_number: string): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/admin/change-car-status/${encodeURIComponent(car_number)}/unavailable`, {
+      method: 'PATCH',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to make car unavailable';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  updateAdminCar: async (token: string, car_number: string, carData: any): Promise<AdminCarOut> => {
+    const formData = new URLSearchParams();
+    formData.append('brand', carData.brand);
+    formData.append('model', carData.model);
+    formData.append('year', carData.year.toString());
+    formData.append('fuel_type', carData.fuel_type);
+    formData.append('transmission', carData.transmission);
+    formData.append('price_per_day', carData.price_per_day.toString());
+    if (carData.price_per_km !== null && carData.price_per_km !== undefined) {
+      formData.append('price_per_km', carData.price_per_km.toString());
+    }
+    formData.append('seats', carData.seats.toString());
+    formData.append('location', carData.location);
+    if (carData.description) {
+      formData.append('description', carData.description);
+    }
+    formData.append('availability_type', carData.availability_type);
+    formData.append('available', carData.available.toString());
+
+    const response = await authFetch(`${BASE_URL}/admin/cars/${encodeURIComponent(car_number)}`, {
+      method: 'PUT',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: formData.toString()
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to update car';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  createAdminCar: async (token: string, carData: any): Promise<AdminCarOut> => {
+    const formData = new URLSearchParams();
+    formData.append('car_number', carData.car_number);
+    formData.append('brand', carData.brand);
+    formData.append('model', carData.model);
+    formData.append('year', carData.year.toString());
+    formData.append('fuel_type', carData.fuel_type);
+    formData.append('transmission', carData.transmission);
+    formData.append('price_per_day', carData.price_per_day.toString());
+    if (carData.price_per_km !== null && carData.price_per_km !== undefined) {
+      formData.append('price_per_km', carData.price_per_km.toString());
+    }
+    formData.append('seats', carData.seats.toString());
+    formData.append('location', carData.location);
+    if (carData.description) {
+      formData.append('description', carData.description);
+    }
+    formData.append('availability_type', carData.availability_type);
+    formData.append('available', carData.available.toString());
+
+    const response = await authFetch(`${BASE_URL}/admin/cars`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: formData.toString()
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to create car';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  // =====================
+  // TICKETS API
+  // =====================
+
+  createTicket: async (token: string | null, payload: any): Promise<TicketOut> => {
+    const headers: any = {
+      'Content-Type': 'application/json',
+      'accept': 'application/json'
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${BASE_URL}/tickets`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to create ticket';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  getMyTickets: async (token: string): Promise<TicketOut[]> => {
+    const response = await authFetch(`${BASE_URL}/tickets/my`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch my tickets');
+    return response.json();
+  },
+
+  getAdminTickets: async (token: string): Promise<TicketOut[]> => {
+    const response = await authFetch(`${BASE_URL}/tickets/admin`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch admin tickets');
+    return response.json();
+  },
+
+  replyToTicket: async (token: string, ticketId: number, admin_reply: string, mark_resolved: boolean): Promise<TicketOut> => {
+    const response = await authFetch(`${BASE_URL}/tickets/admin/${ticketId}/reply`, {
+      method: 'PATCH',
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ admin_reply, mark_resolved })
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to reply to ticket';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  // =====================
+  // NOTIFICATIONS API
+  // =====================
+
+  getMyNotifications: async (token: string): Promise<NotificationItem[]> => {
+    const response = await authFetch(`${BASE_URL}/notification`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) return [];
+    return response.json();
+  },
+
+  getNotificationCount: async (token: string): Promise<number> => {
+    const response = await authFetch(`${BASE_URL}/notification/count`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) return 0;
+    const data = await response.json();
+    return data.unread_count ?? 0;
+  },
+
+  markNotificationRead: async (token: string, id: number): Promise<void> => {
+    await authFetch(`${BASE_URL}/notification/${id}/read`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+  },
+
+  markAllNotificationsRead: async (token: string): Promise<void> => {
+    await authFetch(`${BASE_URL}/notification/read-all`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
   }
 };
