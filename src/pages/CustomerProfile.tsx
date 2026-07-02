@@ -35,6 +35,39 @@ export const CustomerProfile: React.FC = () => {
 
   const [visibleTrips, setVisibleTrips] = useState(5);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [viewingDetails, setViewingDetails] = useState(false);
+  const [cancelMode, setCancelMode] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelRequest = async () => {
+    if (!cancelReason.trim()) {
+      alert('Please provide a reason for cancellation.');
+      return;
+    }
+    setIsCancelling(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Not authenticated');
+      await api.requestCancelBooking(token, selectedBooking.id, cancelReason);
+      
+      if (profile) {
+        setProfile({
+          ...profile,
+          all_bookings: profile.all_bookings?.map(b => b.id === selectedBooking.id ? { ...b, status: 'CANCEL_REQUESTED' } : b)
+        });
+      }
+      setSelectedBooking(null);
+      setViewingDetails(false);
+      setCancelMode(false);
+      setCancelReason('');
+      alert('Cancellation requested successfully. An admin will review it shortly.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to request cancellation');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (user?.email) {
@@ -238,7 +271,7 @@ export const CustomerProfile: React.FC = () => {
                        <div className="flex justify-between items-center">
                          <span className="text-xs text-primary font-bold">View Details</span>
                          {!booking.is_trip_completed && booking.status !== 'CANCELLED' && (
-                           <Button onClick={() => setSelectedBooking(booking)} variant="outline" size="sm" className="border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-7 text-[10px] px-4 rounded-full">
+                           <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-7 text-[10px] px-4 rounded-full">
                              Manage
                            </Button>
                          )}
@@ -527,20 +560,35 @@ export const CustomerProfile: React.FC = () => {
                           </div>
                           <h4 className="font-bold text-white text-xl mb-2">{booking.car_name}</h4>
                           <div className="flex items-center gap-4 text-xs text-white/60 font-medium">
-                            <span className="flex items-center gap-1.5">{booking.start_date} {booking.end_date !== booking.start_date ? `to ${booking.end_date}` : ''}</span>
+                            <span className="flex items-center gap-1.5">{booking.start_date} {booking.end_date ? `to ${booking.end_date}` : ''}</span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right mt-4 md:mt-0 flex flex-col justify-between items-end h-full">
                         <div>
                           <span className="block text-2xl font-bold text-white mb-1">₹{booking.total_amount.toLocaleString()}</span>
-                          <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider bg-green-500/10 px-2 py-1 rounded border border-green-500/20 flex items-center justify-end gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Confirmed & Paid
-                          </span>
+                          {booking.status === 'CANCEL_REQUESTED' ? (
+                            <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-wider bg-yellow-500/10 px-2 py-1 rounded border border-yellow-500/20 flex items-center justify-end gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> Cancel Requested
+                            </span>
+                          ) : booking.status === 'CANCELLED' ? (
+                            <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider bg-red-500/10 px-2 py-1 rounded border border-red-500/20 flex items-center justify-end gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Cancelled
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider bg-green-500/10 px-2 py-1 rounded border border-green-500/20 flex items-center justify-end gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Confirmed & Paid
+                            </span>
+                          )}
+                          {booking.status === 'CONFIRMED' && booking.admin_reject_reason && (
+                            <span className="block text-[10px] text-red-400 mt-1 text-right max-w-[150px] truncate" title={`Cancel Rejected: ${booking.admin_reject_reason}`}>
+                              Reject Reason: {booking.admin_reject_reason}
+                            </span>
+                          )}
                         </div>
                         
                         {!booking.is_trip_completed && booking.status !== 'CANCELLED' && (
-                          <Button onClick={() => setSelectedBooking(booking)} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-8 text-xs px-6 rounded-full">
+                          <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-8 text-xs px-6 rounded-full">
                             Manage
                           </Button>
                         )}
@@ -573,34 +621,97 @@ export const CustomerProfile: React.FC = () => {
       
       {/* Manage Booking Modal */}
       {selectedBooking && (
-        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setSelectedBooking(null)}>
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => { setSelectedBooking(null); setViewingDetails(false); }}>
           <div className="bg-[#111] border border-white/10 rounded-t-2xl md:rounded-2xl w-full max-w-md overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-             <div className="p-6 border-b border-white/5 relative">
-               <h3 className="text-xl font-heading font-bold text-white mb-1">Manage Trip</h3>
-               <p className="text-xs text-muted-foreground">Booking #{selectedBooking.booking_id}</p>
-               <button onClick={() => setSelectedBooking(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+             <div className="p-6 border-b border-white/5 relative flex items-center justify-between">
+               <div>
+                 <h3 className="text-xl font-heading font-bold text-white mb-1">{viewingDetails ? 'Booking Details' : 'Manage Trip'}</h3>
+                 <p className="text-xs text-muted-foreground">Booking #{selectedBooking.booking_id}</p>
+               </div>
+               <button onClick={() => { setSelectedBooking(null); setViewingDetails(false); setCancelMode(false); }} className="text-white/50 hover:text-white transition-colors">
                   <Plus className="rotate-45" size={24} />
                </button>
              </div>
-             <div className="p-4 space-y-2">
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
-                   <div className="flex items-center gap-3"><Car size={18} className="text-primary" /><span className="text-sm font-medium text-white">View Booking Details</span></div>
-                   <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
-                   <div className="flex items-center gap-3"><Upload size={18} className="text-primary rotate-180" /><span className="text-sm font-medium text-white">Download Invoice</span></div>
-                   <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
-                   <div className="flex items-center gap-3"><HelpCircle size={18} className="text-primary" /><span className="text-sm font-medium text-white">Contact Support</span></div>
-                   <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
-                </button>
-             </div>
-             <div className="p-4 border-t border-white/5">
-                <button onClick={() => { alert('Cancel booking flow initiated'); setSelectedBooking(null); }} className="w-full py-4 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-sm transition-colors text-center">
-                   Cancel Booking
-                </button>
-             </div>
+             
+             {cancelMode ? (
+               <div className="p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  <p className="text-sm text-white/80">Please tell us why you want to cancel this booking.</p>
+                  <textarea 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50 resize-none min-h-[100px]"
+                    placeholder="E.g., Change of plans..."
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                  />
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={() => { setCancelMode(false); setCancelReason(''); }} className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium text-sm transition-colors border border-white/10">
+                      Back
+                    </button>
+                    <button onClick={handleCancelRequest} disabled={isCancelling} className="flex-1 py-3 rounded-xl bg-destructive/90 hover:bg-destructive text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                      {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Request'}
+                    </button>
+                  </div>
+               </div>
+             ) : !viewingDetails ? (
+               <>
+                 <div className="p-4 space-y-2">
+                    <button onClick={() => setViewingDetails(true)} className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
+                       <div className="flex items-center gap-3"><Car size={18} className="text-primary" /><span className="text-sm font-medium text-white">View Booking Details</span></div>
+                       <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
+                    </button>
+                    <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
+                       <div className="flex items-center gap-3"><Upload size={18} className="text-primary rotate-180" /><span className="text-sm font-medium text-white">Download Invoice</span></div>
+                       <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
+                    </button>
+                    <button onClick={() => { setSelectedBooking(null); setViewingDetails(false); navigate('/contact'); }} className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors text-left group">
+                       <div className="flex items-center gap-3"><HelpCircle size={18} className="text-primary" /><span className="text-sm font-medium text-white">Contact Support</span></div>
+                       <ChevronRight size={16} className="text-white/30 group-hover:text-primary transition-colors" />
+                    </button>
+                 </div>
+                 <div className="p-4 border-t border-white/5">
+                    <button onClick={() => setCancelMode(true)} className="w-full py-4 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-sm transition-colors text-center">
+                       Cancel Booking
+                    </button>
+                 </div>
+               </>
+             ) : (
+               <div className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm text-muted-foreground">Car Name</span>
+                      <span className="text-sm font-semibold text-white">{selectedBooking.car_name}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm text-muted-foreground">Status</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded uppercase tracking-wider">{selectedBooking.status === 'CANCEL_REQUESTED' ? 'Cancel Requested' : selectedBooking.status}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm text-muted-foreground">Type</span>
+                      <span className="text-sm font-medium text-white">{selectedBooking.booking_type}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm text-muted-foreground">Dates</span>
+                      <span className="text-sm font-medium text-white">{selectedBooking.start_date} {selectedBooking.end_date ? `to ${selectedBooking.end_date}` : ''}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <span className="text-sm text-muted-foreground">Total Amount</span>
+                      <span className="text-sm font-bold text-white">₹{selectedBooking.total_amount?.toLocaleString() ?? '0'}</span>
+                    </div>
+                    {selectedBooking.driver_name && (
+                      <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                        <span className="text-sm text-muted-foreground">Assigned Driver</span>
+                        <div className="text-right">
+                          <span className="text-sm font-medium text-white block">{selectedBooking.driver_name}</span>
+                          <span className="text-xs text-muted-foreground block">{selectedBooking.driver_phone}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <button onClick={() => setViewingDetails(false)} className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 border border-white/10">
+                    Back to Options
+                  </button>
+               </div>
+             )}
           </div>
         </div>
       )}

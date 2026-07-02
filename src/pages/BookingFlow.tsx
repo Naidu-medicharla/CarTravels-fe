@@ -55,6 +55,7 @@ export const BookingFlow: React.FC = () => {
   
   const [confirmingBooking, setConfirmingBooking] = useState(false);
   const [selectedCar, setSelectedCar] = useState<any>(null);
+  const [confirmedBookingData, setConfirmedBookingData] = useState<any>(null);
   
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
   const [isPickupOpen, setIsPickupOpen] = useState(false);
@@ -160,7 +161,8 @@ export const BookingFlow: React.FC = () => {
     try {
       // Simulate 5 seconds payment processing
       await new Promise(resolve => setTimeout(resolve, 5000));
-      await api.confirmRentalBooking(token, carNumber, payload);
+      const res = await api.confirmRentalBooking(token, carNumber, payload);
+      setConfirmedBookingData(res);
       setCurrentStep(3);
     } catch (err: any) {
       showToast(err.message || 'Failed to confirm booking');
@@ -853,11 +855,23 @@ export const BookingFlow: React.FC = () => {
                     </div>
                     <div className="col-span-2 md:col-span-2">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Driver Status</p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-                        <p className="text-sm font-semibold text-yellow-500">Assigning Driver...</p>
-                      </div>
-                      <p className="text-[11px] text-white/50 mt-0.5">You will be notified shortly</p>
+                      {confirmedBookingData?.driver_name ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <p className="text-sm font-semibold text-green-500">Driver Assigned</p>
+                          </div>
+                          <p className="text-[13px] text-white mt-1">{confirmedBookingData.driver_name} • {confirmedBookingData.driver_phone}</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                            <p className="text-sm font-semibold text-yellow-500">Assigning Driver...</p>
+                          </div>
+                          <p className="text-[11px] text-white/50 mt-0.5">You will be notified shortly</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

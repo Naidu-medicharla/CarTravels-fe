@@ -1,4 +1,4 @@
-const BASE_URL = 'https://real-cows-pay.loca.lt';
+const BASE_URL = 'https://deep-clouds-allow.loca.lt';
 
 /**
  * A fetch wrapper for authenticated requests.
@@ -59,6 +59,40 @@ export interface BookingPreview {
   total_amount: number;
 }
 
+export interface DashboardDetailsResponse {
+  kpis: {
+    today_bookings: number;
+    today_revenue: string;
+    available_cars: number;
+    under_maintenance: number;
+  };
+  today_schedule: {
+    id: string;
+    time: string;
+    title: string;
+    customer: string;
+    phone: string;
+    vehicle: string;
+    plate: string;
+    driver: string;
+    pickup: string;
+    destination: string;
+    status: string;
+    payment: string;
+  }[];
+  recent_bookings: {
+    customer: string;
+    vehicle: string;
+    time: string;
+    status: string;
+  }[];
+  revenue_summary: {
+    today: string;
+    yesterday: string;
+    this_month: string;
+  };
+}
+
 export interface UserProfileResponse {
   name: string;
   email: string;
@@ -87,6 +121,7 @@ export interface UserProfileResponse {
     is_rated: boolean;
     rating: number | null;
     created_at: string;
+    admin_reject_reason?: string;
   }[];
 }
 
@@ -259,6 +294,84 @@ export const api = {
       } catch (e) {
         // Ignore json parse error
       }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  requestCancelBooking: async (token: string, bookingId: number, reason: string): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/bookings/${bookingId}/request-cancel`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: JSON.stringify({ reason })
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to request cancellation';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  approveCancelBooking: async (token: string, bookingId: number): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/admin/bookings/${bookingId}/approve-cancel`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to approve cancellation';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  rejectCancelBooking: async (token: string, bookingId: number, reason: string): Promise<any> => {
+    const response = await authFetch(`${BASE_URL}/admin/bookings/${bookingId}/reject-cancel`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: JSON.stringify({ reason })
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to reject cancellation';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+    return response.json();
+  },
+
+  getDashboardDetails: async (token: string): Promise<DashboardDetailsResponse> => {
+    const response = await authFetch(`${BASE_URL}/dashboard/details`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to fetch dashboard details';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) { }
       throw new Error(errorMessage);
     }
     return response.json();

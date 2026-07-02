@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, CalendarCheck, Car, Users, MessageSquare, 
   BarChart3, Settings, Search, Plus, ChevronDown, ChevronRight,
-  AlertTriangle, Phone, MapPin, CreditCard, ChevronUp, MoreVertical, X, Check, Menu, Home, User
+  AlertTriangle, Phone, MapPin, CreditCard, ChevronUp, MoreVertical, X, Check, Menu, Home, User, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ import {
   kpiData, alertsData, actionRequired, fleetStatus, 
   revenueSummary, recentBookings, recentInquiries, mockSchedule, mockBookingsList, mockInquiriesList, mockFleet, mockCustomers
 } from '../data/mockAdminData';
+import { api, DashboardDetailsResponse } from '../lib/api';
 
 // Subcomponents
 const StatBox = ({ title, value }: { title: string, value: string | number }) => (
@@ -49,6 +50,27 @@ export const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState(mockBookingsList);
   const [inquiries, setInquiries] = useState(mockInquiriesList);
 
+  const [dashboardData, setDashboardData] = useState<DashboardDetailsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    if (activeTab === 'Dashboard') {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const token = localStorage.getItem('auth_token') || '';
+          const data = await api.getDashboardDetails(token);
+          setDashboardData(data);
+        } catch (e) {
+          console.error('Failed to fetch dashboard data', e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, [activeTab]);
+
   // Drawer State - Driver
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
@@ -82,6 +104,40 @@ export const AdminDashboard: React.FC = () => {
   const [isCustomerDrawerOpen, setIsCustomerDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
+
+  // Cancel Request State
+  const [isCancelRejectModalOpen, setIsCancelRejectModalOpen] = useState(false);
+  const [cancelRejectReason, setCancelRejectReason] = useState('');
+  const [bookingToReject, setBookingToReject] = useState<string | null>(null);
+
+  const handleApproveCancel = async (id: string) => {
+    try {
+      const token = localStorage.getItem('auth_token') || '';
+      await api.approveCancelBooking(token, parseInt(id));
+    } catch (e) {
+      console.error(e);
+    }
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'Cancelled' } : b));
+  };
+
+  const openRejectCancelModal = (id: string) => {
+    setBookingToReject(id);
+    setCancelRejectReason('');
+    setIsCancelRejectModalOpen(true);
+  };
+
+  const handleRejectCancel = async () => {
+    if (!bookingToReject || !cancelRejectReason.trim()) return;
+    try {
+      const token = localStorage.getItem('auth_token') || '';
+      await api.rejectCancelBooking(token, parseInt(bookingToReject), cancelRejectReason);
+    } catch (e) {
+      console.error(e);
+    }
+    setBookings(prev => prev.map(b => b.id === bookingToReject ? { ...b, status: 'Confirmed' } : b));
+    setIsCancelRejectModalOpen(false);
+    setBookingToReject(null);
+  };
 
   const unassignedCount = bookings.filter(b => b.driver === 'Unassigned').length;
   const newInquiriesCount = inquiries.filter(i => i.status === 'New').length;
@@ -203,7 +259,15 @@ export const AdminDashboard: React.FC = () => {
     { name: 'Settings', icon: Settings },
   ];
 
-  const renderDashboard = () => (
+  const renderDashboard = () => {
+    if (loading || !dashboardData) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+        </div>
+      );
+    }
+    return (
     <div className="space-y-6">
       
       {/* 1. Alert Center */}
@@ -239,13 +303,13 @@ export const AdminDashboard: React.FC = () => {
       {/* 2. Dashboard Overview KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
         <SectionCard title="Bookings" className="p-4 md:p-5">
-          <span className="text-2xl md:text-3xl font-bold text-white">{kpiData.todayBookings}</span>
+          <span className="text-2xl md:text-3xl font-bold text-white">{dashboardData.kpis.today_bookings}</span>
         </SectionCard>
         <SectionCard title="Revenue" className="p-4 md:p-5">
-          <span className="text-xl md:text-2xl font-bold text-[#D4AF37]">{kpiData.todayRevenue}</span>
+          <span className="text-xl md:text-2xl font-bold text-[#D4AF37]">{dashboardData.kpis.today_revenue}</span>
         </SectionCard>
         <SectionCard title="Cars" className="p-4 md:p-5">
-          <span className="text-2xl md:text-3xl font-bold text-white">{kpiData.availableCars}</span>
+          <span className="text-2xl md:text-3xl font-bold text-white">{dashboardData.kpis.available_cars}</span>
         </SectionCard>
         <SectionCard title="Pending" className="p-4 md:p-5">
           <span className="text-2xl md:text-3xl font-bold text-yellow-500">{kpiData.pendingRequests}</span>
@@ -254,7 +318,7 @@ export const AdminDashboard: React.FC = () => {
           <span className="text-2xl md:text-3xl font-bold text-white">{newInquiriesCount}</span>
         </SectionCard>
         <SectionCard title="Maintenance" className="p-4 md:p-5">
-          <span className="text-2xl md:text-3xl font-bold text-red-400">{kpiData.underMaintenance}</span>
+          <span className="text-2xl md:text-3xl font-bold text-red-400">{dashboardData.kpis.under_maintenance}</span>
         </SectionCard>
       </div>
 
@@ -292,7 +356,10 @@ export const AdminDashboard: React.FC = () => {
           {/* 3. Today's Schedule (Accordion) */}
           <SectionCard title="Today's Schedule">
             <div className="flex flex-col divide-y divide-white/5">
-              {mockSchedule.map((s) => {
+              {dashboardData.today_schedule.length === 0 && (
+                <div className="py-8 text-center text-white/40 text-sm">No scheduled trips for today.</div>
+              )}
+              {dashboardData.today_schedule.map((s) => {
                 const isExpanded = expandedScheduleId === s.id;
                 return (
                   <div key={s.id} className="py-4">
@@ -385,7 +452,10 @@ export const AdminDashboard: React.FC = () => {
           {/* 5. Recent Bookings */}
           <SectionCard title="Recent Bookings">
             <div className="flex flex-col gap-4">
-              {recentBookings.map((b, i) => (
+              {dashboardData.recent_bookings.length === 0 && (
+                <div className="text-white/40 text-sm text-center py-4">No recent bookings.</div>
+              )}
+              {dashboardData.recent_bookings.map((b, i) => (
                 <div key={i} className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0">
                   <div>
                     <h4 className="text-sm font-bold text-white mb-0.5">{b.customer}</h4>
@@ -428,15 +498,15 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-end border-b border-white/5 pb-3">
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Today</span>
-                <span className="text-lg font-bold text-[#D4AF37]">{revenueSummary.today}</span>
+                <span className="text-lg font-bold text-[#D4AF37]">{dashboardData.revenue_summary.today}</span>
               </div>
               <div className="flex justify-between items-end border-b border-white/5 pb-3">
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Yesterday</span>
-                <span className="text-sm font-bold text-white">{revenueSummary.yesterday}</span>
+                <span className="text-sm font-bold text-white">{dashboardData.revenue_summary.yesterday}</span>
               </div>
               <div className="flex justify-between items-end">
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest">This Month</span>
-                <span className="text-sm font-bold text-white">{revenueSummary.thisMonth}</span>
+                <span className="text-sm font-bold text-white">{dashboardData.revenue_summary.this_month}</span>
               </div>
             </div>
           </SectionCard>
@@ -445,12 +515,18 @@ export const AdminDashboard: React.FC = () => {
       </div>
     </div>
   );
+  };
 
   const renderBookingsPlaceholder = () => {
+    const cancelRequestsCount = bookings.filter(b => b.status === 'CANCEL_REQUESTED').length;
+
     const filteredBookings = bookings.filter(b => {
       if (activeFilter === 'Awaiting Driver') return b.driver === 'Unassigned';
       if (activeFilter === 'Pending') return b.status === 'Pending';
       if (activeFilter === 'Confirmed') return b.status === 'Confirmed';
+      if (activeFilter === 'Cancel Requests') return b.status === 'CANCEL_REQUESTED';
+      if (activeFilter === 'Cancelled') return b.status === 'Cancelled' || b.status === 'CANCELLED';
+      if (activeFilter === 'Completed') return b.status === 'Completed';
       return true; // 'All'
     });
 
@@ -467,13 +543,14 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-          {['All', 'Awaiting Driver', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map(f => (
+          {['All', 'Awaiting Driver', 'Pending', 'Cancel Requests', 'Confirmed', 'Completed', 'Cancelled'].map(f => (
             <button 
               key={f} 
               onClick={() => setActiveFilter(f)}
               className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeFilter === f ? 'bg-white text-black' : 'bg-[#111111] border border-white/10 text-white hover:bg-white/10'}`}
             >
               {f} {f === 'Awaiting Driver' && unassignedCount > 0 && `(${unassignedCount})`}
+              {f === 'Cancel Requests' && cancelRequestsCount > 0 && `(${cancelRequestsCount})`}
             </button>
           ))}
         </div>
@@ -512,7 +589,16 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                     <td className="px-4 py-4"><StatusText status={b.status} /></td>
                     <td className="px-4 py-4 text-right">
-                      {b.driver === 'Unassigned' ? (
+                      {b.status === 'CANCEL_REQUESTED' ? (
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleApproveCancel(b.id)} className="bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                            Approve
+                          </button>
+                          <button onClick={() => openRejectCancelModal(b.id)} className="bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                            Reject
+                          </button>
+                        </div>
+                      ) : b.driver === 'Unassigned' ? (
                         <button onClick={() => openAssignDrawer(b.id)} className="bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black px-3 py-1.5 rounded text-xs font-bold transition-colors">
                           Assign Driver
                         </button>
@@ -552,7 +638,16 @@ export const AdminDashboard: React.FC = () => {
                     <span className={b.driver === 'Unassigned' ? 'text-red-400 font-bold' : 'text-white'}>{b.driver}</span>
                   </div>
                 </div>
-                {b.driver === 'Unassigned' && (
+                {b.status === 'CANCEL_REQUESTED' ? (
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button onClick={() => handleApproveCancel(b.id)} className="flex-1 bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white py-2 rounded text-xs font-bold transition-colors">
+                      Approve
+                    </button>
+                    <button onClick={() => openRejectCancelModal(b.id)} className="flex-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white py-2 rounded text-xs font-bold transition-colors">
+                      Reject
+                    </button>
+                  </div>
+                ) : b.driver === 'Unassigned' && (
                   <button onClick={() => openAssignDrawer(b.id)} className="w-full mt-2 bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black py-2 rounded text-xs font-bold transition-colors">
                     Assign Driver
                   </button>
@@ -1744,6 +1839,44 @@ export const AdminDashboard: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+      {/* Reject Cancel Request Modal */}
+      <AnimatePresence>
+        {isCancelRejectModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative"
+            >
+              <div className="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 className="text-xl font-bold text-white">Reject Cancellation</h3>
+                <button onClick={() => setIsCancelRejectModalOpen(false)} className="text-white/50 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-white/70">Please provide a reason for rejecting this cancellation request.</p>
+                <textarea
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#D4AF37]/50 resize-none min-h-[100px]"
+                  placeholder="E.g., Outside of cancellation window..."
+                  value={cancelRejectReason}
+                  onChange={(e) => setCancelRejectReason(e.target.value)}
+                />
+              </div>
+              <div className="p-6 bg-black/40 border-t border-white/5 flex justify-end gap-3">
+                <button onClick={() => setIsCancelRejectModalOpen(false)} className="px-6 py-2 rounded font-bold text-sm bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10">
+                  Cancel
+                </button>
+                <button onClick={handleRejectCancel} className="px-6 py-2 rounded font-bold text-sm bg-red-500/90 hover:bg-red-500 text-white transition-colors">
+                  Confirm Rejection
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Floating Action Button (FAB) */}
       <div className="md:hidden fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3">
         <AnimatePresence>
