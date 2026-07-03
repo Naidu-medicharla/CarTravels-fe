@@ -43,14 +43,14 @@ export const Home: React.FC = () => {
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-[position:30%_center] md:bg-[position:130%_center]"
+          className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-[position:30%_center] md:bg-[position:calc(130%_+_60px)_center]"
           style={{
             backgroundImage: `url(${bgImage})`
           }}
         />
 
-        {/* Fog/Vignette Overlays */}
-        <div className="absolute left-0 top-0 bottom-0 w-full md:w-[60%] lg:w-[55%] z-0 bg-gradient-to-r from-[#050505] via-[#050505]/80 to-transparent" />
+        {/* Warm Overlays */}
+        <div className="absolute left-0 top-0 bottom-0 w-full md:w-[60%] lg:w-[55%] z-0 bg-gradient-to-r from-[#0A0A0A]/90 via-[#23190A]/60 to-transparent" />
 
         <div className="container px-6 md:px-8 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
           <motion.div
@@ -59,49 +59,63 @@ export const Home: React.FC = () => {
             variants={staggerContainer}
             className="lg:col-span-7 max-w-2xl lg:ml-12"
           >
-            <motion.div variants={fadeInUp} className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 overflow-hidden group">
-              <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <img src={starImage} alt="star" className="w-4 h-4 relative z-10" />
-              <span className="text-xs font-semibold text-primary tracking-[0.2em] uppercase relative z-10">Premium Travel Service</span>
+            <motion.div variants={fadeInUp} className="relative inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/[0.08] bg-white/5 mb-8">
+              <span className="text-[10px] font-medium text-foreground tracking-[0.25em] uppercase">EST. 2026 | Luxury Chauffeur Service</span>
             </motion.div>
 
-            <motion.h1 variants={fadeInUp} className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.15] md:leading-[1.1] mb-6 md:mb-8 drop-shadow-2xl">
-              <span className="text-white font-light tracking-wide">Premium Travel,</span><br />
-              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] italic">Perfectly Timed.</span>
+            <motion.h1 variants={fadeInUp} className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.25] md:leading-[1.2] mb-6 md:mb-8">
+              <span className="text-foreground font-light tracking-wide">Premium Travel,</span><br />
+              <span className="font-light text-primary italic">Perfectly Timed.</span>
             </motion.h1>
 
-            <motion.p variants={fadeInUp} className="text-base md:text-lg text-white/80 leading-[1.8] mb-48 md:mb-12 max-w-[320px] md:max-w-md font-light">
+            <motion.p variants={fadeInUp} className="text-base md:text-lg text-muted-foreground leading-[1.9] mb-10 max-w-[320px] md:max-w-md font-light">
               Experience seamless airport transfers, outstation journeys, corporate travel, and premium chauffeur services with Vibe Travels. Every ride is designed for comfort, reliability, and elegance.
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center max-w-[320px] sm:max-w-none">
-              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 hover:shadow-[0_20px_40px_rgba(212,175,55,0.3)] hover:-translate-y-1 font-bold px-8 h-14 w-[260px] sm:w-auto rounded-full transition-all duration-300 group">
-                Book Your Ride <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Button onClick={() => navigate('/cars')} size="lg" className="bg-primary text-black hover:bg-primary/90 font-medium px-8 h-14 w-[260px] sm:w-auto rounded-full transition-all duration-300 group">
+                Reserve Journey <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-white hover:text-primary bg-white/5 border border-white/10 hover:bg-white/10 h-14 px-6 w-[260px] sm:w-auto rounded-full font-medium transition-colors group relative overflow-hidden">
+              <Button onClick={() => navigate('/cars')} size="lg" variant="ghost" className="text-foreground hover:text-white bg-white/5 backdrop-blur-[10px] border border-white/[0.08] hover:bg-white/10 h-14 px-6 w-[260px] sm:w-auto rounded-full font-light transition-colors">
                 View Fleet
-                <div className="absolute bottom-3 left-6 right-6 h-px bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                <ArrowRight className="ml-2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </Button>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="mt-12 flex flex-col items-start gap-4">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Customer" className="w-full h-full object-cover" />
-                  </div>
-                ))}
+            <motion.div variants={fadeInUp} className="mt-12 pt-8 border-t border-white/5 flex flex-col items-start gap-4">
+              <div className="flex items-center text-primary mb-1">
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                <span className="text-foreground font-medium text-sm ml-3">4.9</span>
+                <span className="text-muted-foreground text-sm ml-2">| 12,000+ Satisfied Travelers</span>
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center text-primary mb-1">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
-                  <span className="text-white font-bold text-sm ml-2">4.9</span>
-                </div>
-                <span className="text-xs text-white/50">Trusted by 12,000+ Customers</span>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground flex gap-4">
+                <span>Corporate</span>
+                <span className="text-white/20">|</span>
+                <span>Airport</span>
+                <span className="text-white/20">|</span>
+                <span>Wedding</span>
+                <span className="text-white/20">|</span>
+                <span>Executive</span>
               </div>
             </motion.div>
+          </motion.div>
 
+          {/* Floating Stats - Desktop Only */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="hidden lg:flex lg:col-span-5 flex-col gap-4 items-end justify-center pr-12"
+          >
+            {[
+              { value: "150+", label: "Luxury Vehicles" },
+              { value: "24/7", label: "Availability" },
+              { value: "10+", label: "Cities" }
+            ].map((stat, i) => (
+              <div key={i} className="glass-panel px-8 py-5 w-[220px] text-right">
+                <div className="text-2xl font-heading text-primary mb-1">{stat.value}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
           </motion.div>
         </div>
 
@@ -113,7 +127,7 @@ export const Home: React.FC = () => {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/40 hover:text-primary transition-colors cursor-pointer"
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
         >
-          <span className="text-xs uppercase tracking-[0.2em] mb-2 font-medium">Explore</span>
+          <span className="text-xs uppercase tracking-[0.2em] mb-2 font-medium">Discover</span>
           <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}>
             <ChevronDown size={20} />
           </motion.div>

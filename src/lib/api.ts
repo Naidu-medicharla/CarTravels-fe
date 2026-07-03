@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://vibe-travels.onrender.com';
 
 /**
  * A fetch wrapper for authenticated requests.

@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    /* Base theme colors - Luxury Matte Black */
-    --background: 0 0% 4%; /* #0A0A0A */
-    --foreground: 0 0% 100%; /* White */
+    /* Base theme colors - Modern European Luxury */
+    --background: 30 7% 5%; /* #0F0E0D */
+    --foreground: 42 27% 94%; /* #F4F1EA */
 
-    --card: 0 0% 7%; /* #111111 */
-    --card-foreground: 0 0% 100%;
+    --card: 30 7% 7%; 
+    --card-foreground: 42 27% 94%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 30 7% 7%;
+    --popover-foreground: 42 27% 94%;
 
-    /* Luxury Gold Accent: #D4AF37 */
-    --primary: 46 65% 52%; 
+    /* Matte Gold Accent: #D6B04A */
+    --primary: 44 65% 56%; 
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 15%; /* #262626 */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 30 5% 15%;
+    --secondary-foreground: 42 27% 94%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 63%; /* #A1A1AA */
+    --muted: 30 5% 15%;
+    --muted-foreground: 0 0% 77%; /* #C5C5C5 */
 
-    --accent: 46 65% 52%; /* Gold accent */
-    --accent-foreground: 0 0% 0%;
+    --accent: 356 67% 33%; /* Accent Red #8E1C23 */
+    --accent-foreground: 42 27% 94%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 356 67% 33%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%; /* Subtle borders */
-    --input: 0 0% 15%;
-    --ring: 46 65% 52%; /* Gold focus ring */
+    --border: 30 5% 15%; /* Subtle borders */
+    --input: 30 5% 15%;
+    --ring: 44 65% 56%; /* Gold focus ring */
 
     --radius: 0.5rem;
   }
@@ -55,7 +55,4 @@
   }
 }
 
-/* Base custom styles to retain luxury aesthetic */
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
-}
+

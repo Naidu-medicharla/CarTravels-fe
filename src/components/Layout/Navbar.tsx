@@ -72,11 +72,15 @@ export const Navbar: React.FC = () => {
       <nav className={`fixed top-0 left-0 w-full z-[900] transition-all duration-300 ${isSticky ? 'bg-[#0a0a0a]/75 backdrop-blur-[20px] border-b border-white/5 shadow-2xl py-6' : 'bg-transparent py-10'}`}>
         <div className="container px-6 md:px-8 flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition group">
-            <Car size={38} className="text-primary group-hover:scale-105 transition-transform" />
-            <div className="flex items-baseline gap-1.5 ml-1 pt-1">
-              <span className="font-heading font-bold text-4xl text-primary leading-none tracking-wide">Vibe</span>
-              <span className="font-heading font-normal text-3xl text-white tracking-widest leading-none">Travels</span>
+          <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition group">
+            <div className="w-10 h-10 rounded-full border-[1.5px] border-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="font-heading font-medium text-lg text-primary tracking-widest leading-none pt-0.5">VT</span>
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1.5 pt-1">
+                <span className="font-heading font-medium text-3xl text-primary leading-none tracking-wide">Vibe</span>
+                <span className="font-heading font-light text-3xl text-foreground tracking-widest leading-none">Travels</span>
+              </div>
             </div>
           </Link>
 

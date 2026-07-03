@@ -1,26 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api, NotificationItem } from './api';
 
-const POLL_INTERVAL_MS = 30_000; // 30 seconds
+// ── Config ────────────────────────────────────────────────────────────────────
+// Keep in sync with api.ts BASE_URL (or move both to an env var)
+const BASE_URL = 'http://localhost:8000';
+
+// How long to wait before reconnecting after a dropped SSE connection
+const SSE_RECONNECT_DELAY_MS = 3_000;
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function useNotifications(token: string | null) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [unreadCount, setUnreadCount]     = useState(0);
+  const [panelOpen, setPanelOpen]         = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Fetch unread count (lightweight — used for badge polling)
-  const refreshCount = useCallback(async () => {
-    if (!token) return;
-    try {
-      const count = await api.getNotificationCount(token);
-      setUnreadCount(count);
-    } catch {
-      // silently fail — network issues shouldn't break the UI
-    }
-  }, [token]);
-
-  // Fetch full notification list (heavier — only when panel is opened)
+  // ── Fetch full list (called when panel opens) ─────────────────────────────
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
     try {
@@ -28,22 +24,19 @@ export function useNotifications(token: string | null) {
       setNotifications(data);
       setUnreadCount(data.filter(n => !n.is_read).length);
     } catch {
-      // silently fail
+      // silently fail — network issues shouldn't break the UI
     }
   }, [token]);
 
-  // Open panel: fetch full list + stop polling while panel is open
+  // ── Panel controls ────────────────────────────────────────────────────────
   const openPanel = useCallback(() => {
     setPanelOpen(true);
-    fetchNotifications();
+    fetchNotifications(); // load full list when panel opens
   }, [fetchNotifications]);
 
-  // Close panel
-  const closePanel = useCallback(() => {
-    setPanelOpen(false);
-  }, []);
+  const closePanel = useCallback(() => setPanelOpen(false), []);
 
-  // Mark single notification as read and remove it from the list
+  // ── Mark single notification as read ─────────────────────────────────────
   const markRead = useCallback(async (id: number) => {
     if (!token) return;
     try {
@@ -55,7 +48,7 @@ export function useNotifications(token: string | null) {
     }
   }, [token]);
 
-  // Mark all as read and clear the list
+  // ── Mark all as read ──────────────────────────────────────────────────────
   const markAllRead = useCallback(async () => {
     if (!token) return;
     try {
@@ -67,16 +60,83 @@ export function useNotifications(token: string | null) {
     }
   }, [token]);
 
-  // Start polling on mount, clear on unmount
+  // ── SSE connection (replaces setInterval polling) ─────────────────────────
   useEffect(() => {
     if (!token) return;
-    refreshCount(); // immediate first check
 
-    intervalRef.current = setInterval(refreshCount, POLL_INTERVAL_MS);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    // Seed the badge count immediately on mount (no waiting for first SSE push)
+    api.getNotificationCount(token)
+      .then(count => setUnreadCount(count))
+      .catch(() => {});
+
+    let isActive = true;
+
+    const connect = async () => {
+      if (!isActive) return;
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        // Use fetch (not EventSource) so we can send the Authorization header
+        const response = await fetch(`${BASE_URL}/notification/stream`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept':        'text/event-stream',
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok || !response.body) {
+          throw new Error(`SSE failed: ${response.status}`);
+        }
+
+        const reader  = response.body.getReader();
+        const decoder = new TextDecoder();
+        let   buffer  = '';
+
+        while (isActive) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete lines; keep any partial line in the buffer
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue; // skip heartbeats & blanks
+
+            try {
+              const incoming: NotificationItem[] = JSON.parse(line.slice(6));
+              if (incoming.length > 0) {
+                // Prepend new notifications and bump the badge
+                setNotifications(prev => [...incoming, ...prev]);
+                setUnreadCount(prev => prev + incoming.length);
+              }
+            } catch {
+              // ignore malformed JSON
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return; // intentional close, don't reconnect
+        // Network error / server restart → reconnect after delay
+        if (isActive) {
+          setTimeout(connect, SSE_RECONNECT_DELAY_MS);
+        }
+      }
     };
-  }, [token, refreshCount]);
+
+    connect();
+
+    // Cleanup: abort the stream when token changes or component unmounts
+    return () => {
+      isActive = false;
+      abortRef.current?.abort();
+    };
+  }, [token]);
 
   return {
     notifications,
