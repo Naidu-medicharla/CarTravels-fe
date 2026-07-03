@@ -1,4 +1,4 @@
-const BASE_URL = 'https://vibe-travels.onrender.com';
+export const BASE_URL = 'https://vibe-travels.onrender.com';
 
 /**
  * A fetch wrapper for authenticated requests.

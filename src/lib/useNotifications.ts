@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { api, NotificationItem } from './api';
+import { api, NotificationItem, BASE_URL } from './api';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-// Keep in sync with api.ts BASE_URL (or move both to an env var)
-const BASE_URL = 'http://localhost:8000';
 
 // How long to wait before reconnecting after a dropped SSE connection
 const SSE_RECONNECT_DELAY_MS = 3_000;
@@ -12,8 +10,8 @@ const SSE_RECONNECT_DELAY_MS = 3_000;
 
 export function useNotifications(token: string | null) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount]     = useState(0);
-  const [panelOpen, setPanelOpen]         = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [panelOpen, setPanelOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   // ── Fetch full list (called when panel opens) ─────────────────────────────
@@ -67,7 +65,7 @@ export function useNotifications(token: string | null) {
     // Seed the badge count immediately on mount (no waiting for first SSE push)
     api.getNotificationCount(token)
       .then(count => setUnreadCount(count))
-      .catch(() => {});
+      .catch(() => { });
 
     let isActive = true;
 
@@ -82,7 +80,7 @@ export function useNotifications(token: string | null) {
         const response = await fetch(`${BASE_URL}/notification/stream`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Accept':        'text/event-stream',
+            'Accept': 'text/event-stream',
           },
           signal: controller.signal,
         });
@@ -91,9 +89,9 @@ export function useNotifications(token: string | null) {
           throw new Error(`SSE failed: ${response.status}`);
         }
 
-        const reader  = response.body.getReader();
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let   buffer  = '';
+        let buffer = '';
 
         while (isActive) {
           const { done, value } = await reader.read();
