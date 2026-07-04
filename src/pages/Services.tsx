@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import airportBg from '../assets/services/airport.png';
 import outstationBg from '../assets/services/outstation.png';
 import templeBg from '../assets/services/temple.png';
+import familyBg from '../assets/services/family.jpg';
 
 type SpecPosition = 'top-left' | 'top-right' | 'bottom-right' | 'center-right' | 'bottom-center';
 
@@ -114,7 +115,7 @@ const EXPERIENCES: ExperienceData[] = [
     thirdLine: 'Space For Everyone.',
     description: 'Create memories together in spacious, premium vehicles. Perfect for extended family trips where comfort is paramount.',
     price: '3,000',
-    bgImage: 'https://images.unsplash.com/photo-1748215210939-ad8b6c8c086d?ixlib=rb-4.1.0&q=100&w=2560&auto=format&fit=crop', 
+    bgImage: familyBg, 
     vehicle: 'Toyota Innova Crysta',
     vehicleType: 'Premium MPV',
     specPosition: 'bottom-right'
@@ -123,6 +124,7 @@ const EXPERIENCES: ExperienceData[] = [
 
 export const Services: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn } = useAuth();
   const [activeExpIndex, setActiveExpIndex] = useState(0);
   const activeExp = EXPERIENCES[activeExpIndex];
@@ -130,6 +132,14 @@ export const Services: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const hash = location.hash.replace('#', '');
+    if (hash) {
+      const idx = EXPERIENCES.findIndex(e => e.id === hash);
+      if (idx !== -1) setActiveExpIndex(idx);
+    }
+  }, [location.hash]);
 
   // Auto-play slideshow
   useEffect(() => {
@@ -184,7 +194,7 @@ export const Services: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen relative overflow-hidden font-sans pt-[140px]">
+    <div className="bg-[#050505] min-h-screen relative overflow-hidden font-sans pt-[72px] lg:pt-[140px]">
       
       {/* --- CINEMATIC BACKGROUND --- */}
       <AnimatePresence mode="wait">
@@ -229,7 +239,7 @@ export const Services: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 min-h-[calc(100vh-140px)] flex flex-col pt-4 md:pt-8 pb-12">
+      <div className="relative z-10 min-h-[calc(100vh-140px)] flex flex-col pt-4 md:pt-8 pb-32 lg:pb-12">
         
         {/* --- BOTTOM SLIDE INDICATORS --- */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[50] flex items-center gap-3">
@@ -276,7 +286,7 @@ export const Services: React.FC = () => {
                 className="flex flex-col"
               >
                 {/* Typography Stack */}
-                <motion.div className="mb-4 md:mb-8 mt-2 md:mt-8">
+                <motion.div className="mb-8 md:mb-8 mt-4 md:mt-8">
                   <h1 className="font-heading font-medium text-white leading-[0.95] tracking-tight text-[38px] sm:text-[50px] md:text-[60px] uppercase mb-3 md:mb-4 drop-shadow-2xl">
                     {activeExp.titleLines.map((line, i) => (
                       <span key={i} className="block">{line}</span>
@@ -288,14 +298,14 @@ export const Services: React.FC = () => {
                   </span>
                 </motion.div>
 
-                <motion.p className="text-white/90 text-[13px] md:text-[14px] leading-[1.8] mb-6 md:mb-8 font-medium max-w-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                <motion.p className="text-white/90 text-[13px] md:text-[14px] leading-[1.8] mb-10 md:mb-8 font-medium max-w-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                   {activeExp.description}
                 </motion.p>
                 
                 <motion.div>
                   <Button 
-                    onClick={() => navigate(isLoggedIn ? '/book' : '/login')}
-                    className="bg-transparent border border-white/20 text-white hover:bg-white hover:text-black font-medium uppercase tracking-widest text-xs h-12 rounded-none flex items-center gap-4 transition-all duration-500 group px-6 w-fit mb-6 lg:mb-0"
+                    onClick={() => navigate('/cars')}
+                    className="bg-transparent border border-white/20 text-white hover:bg-white hover:text-black font-medium uppercase tracking-widest text-xs h-12 rounded-none flex items-center gap-4 transition-all duration-500 group px-6 w-fit mb-10 lg:mb-0"
                   >
                     <span>Reserve Journey</span>
                     <ArrowRight size={16} className="transform group-hover:translate-x-2 transition-transform" />
@@ -303,7 +313,7 @@ export const Services: React.FC = () => {
                 </motion.div>
 
                 {/* Mobile Specs Block (Only visible on mobile) */}
-                <motion.div className="lg:hidden flex flex-col pt-6 border-t border-white/10 mt-auto">
+                <motion.div className="lg:hidden flex flex-col pt-6 border-t border-white/10 mt-auto pb-4">
                   {renderSpecs(true)}
                 </motion.div>
 

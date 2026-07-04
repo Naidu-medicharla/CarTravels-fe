@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://vibe-travels.onrender.com';
+export const BASE_URL = 'http://localhost:8000';
 
 /**
  * A fetch wrapper for authenticated requests.
@@ -6,16 +6,29 @@ export const BASE_URL = 'https://vibe-travels.onrender.com';
  * clears localStorage so the next page load / auth check logs the user out.
  */
 const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const response = await fetch(url, options);
-  if (response.status === 401) {
-    // Token is invalid or expired on the backend — clear local session
-    localStorage.removeItem('auth_token');
-    // Optionally redirect to login if not already there
-    if (!window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login';
+  try {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+      // Token is invalid or expired on the backend — clear local session
+      localStorage.removeItem('auth_token');
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      }
     }
+    
+    // Check if the response is HTML (e.g. 502 Bad Gateway)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      throw new Error(`Server returned HTML instead of JSON (Status ${response.status}). The server might be down.`);
+    }
+
+    return response;
+  } catch (err: any) {
+    if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+      throw new Error('Network error: Could not connect to the server. Please check your internet connection or try again later.');
+    }
+    throw err;
   }
-  return response;
 };
 
 export interface User {
@@ -841,5 +854,27 @@ export const api = {
         'Bypass-Tunnel-Reminder': 'true'
       }
     });
+  },
+
+  // =====================
+  // USER SETTINGS
+  // =====================
+
+  changePassword: async (token: string, currentPassword: string, newPassword: string): Promise<void> => {
+    const response = await authFetch(`${BASE_URL}/users/change-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+    });
+    if (!response.ok) {
+      let errorMessage = 'Failed to change password';
+      try { const err = await response.json(); errorMessage = err.detail || errorMessage; } catch (e) {}
+      throw new Error(errorMessage);
+    }
   }
 };

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, ChevronDown, Check, Users, Settings, Flame, Loader2, MapPin, X } from 'lucide-react';
+import { Filter, ChevronDown, Check, Users, Settings, Flame, Loader2, MapPin, X, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useGlobalData } from '../../context/GlobalDataContext';
 import { api } from '../../lib/api';
 
 import { getFallbackImage } from '@/lib/carImages';
@@ -65,15 +66,16 @@ const MOCK_CARS: DisplayCar[] = [
 export const FleetSection: React.FC = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const { customerCars, isDataLoading } = useGlobalData();
 
   const [activeTab, setActiveTab] = useState<'rental' | 'drop' | 'any'>('any');
   const [dbCars, setDbCars] = useState<DisplayCar[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (showMobileFilters) {
@@ -85,36 +87,27 @@ export const FleetSection: React.FC = () => {
   }, [showMobileFilters]);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        setLoading(true);
-        api.getAllCars(token)
-          .then(data => {
-            const formatted: DisplayCar[] = data.map(c => ({
-              name: `${c.brand} ${c.model}`,
-              brand: c.brand,
-              price: `₹ ${c.price_per_day}`,
-              dropPrice: `₹ ${c.price_per_km}`,
-              bookingTypes: c.availability_type === 'Both' ? ['rental', 'drop'] :
-                c.availability_type === 'Rental' ? ['rental'] : ['drop'],
-              img: c.images && c.images.length > 0 ? c.images[0] : getFallbackImage(c.brand, c.model),
-              transmission: c.transmission,
-              fuelType: c.fuel_type,
-              seats: c.seats,
-              location: c.location,
-              carNumber: c.car_number,
-              available: c.available
-            }));
-            setDbCars(formatted);
-          })
-          .catch(err => console.error("Failed to load cars", err))
-          .finally(() => setLoading(false));
-      }
-    } else {
+    if (isLoggedIn && customerCars.length > 0) {
+      const formatted: DisplayCar[] = customerCars.map(c => ({
+        name: `${c.brand} ${c.model}`,
+        brand: c.brand,
+        price: `₹ ${c.price_per_day}`,
+        dropPrice: `₹ ${c.price_per_km}`,
+        bookingTypes: c.availability_type === 'Both' ? ['rental', 'drop'] :
+          c.availability_type === 'Rental' ? ['rental'] : ['drop'],
+        img: c.images && c.images.length > 0 ? c.images[0] : getFallbackImage(c.brand, c.model),
+        transmission: c.transmission,
+        fuelType: c.fuel_type,
+        seats: c.seats,
+        location: c.location,
+        carNumber: c.car_number,
+        available: c.available
+      }));
+      setDbCars(formatted);
+    } else if (!isLoggedIn) {
       setDbCars([]);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, customerCars]);
 
   const displayCars = isLoggedIn ? dbCars : MOCK_CARS;
 
@@ -128,7 +121,18 @@ export const FleetSection: React.FC = () => {
     const priceValue = parseInt(car.price.replace(/[^0-9]/g, ''), 10) || 0;
     const priceMatch = priceValue <= maxPrice;
     const availMatch = !showOnlyAvailable || car.available;
-    return typeMatch && brandMatch && locMatch && priceMatch && availMatch;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const searchMatch = !query || 
+      car.name.toLowerCase().includes(query) || 
+      car.brand.toLowerCase().includes(query) ||
+      car.carNumber.toLowerCase().includes(query) ||
+      car.seats.toString().includes(query) ||
+      `${car.seats} seater`.includes(query) ||
+      car.fuelType.toLowerCase().includes(query) ||
+      car.transmission.toLowerCase().includes(query);
+      
+    return typeMatch && brandMatch && locMatch && priceMatch && availMatch && searchMatch;
   });
 
   const toggleBrand = (brand: string) => {
@@ -323,13 +327,23 @@ export const FleetSection: React.FC = () => {
 
             {/* Top Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b border-white/10 pb-6">
-              <span className="text-sm text-muted-foreground font-semibold">
+              <span className="text-sm text-muted-foreground font-semibold whitespace-nowrap">
                 Showing {filteredCars.length} vehicles
               </span>
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search car, number, 4 seater..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-black/50 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                />
+              </div>
             </div>
 
             {/* Cars Grid / Loading State */}
-            {loading ? (
+            {isDataLoading ? (
               <div className="w-full flex flex-col items-center justify-center py-32">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
                 <p className="text-muted-foreground tracking-widest uppercase font-bold text-sm animate-pulse">Loading Fleet...</p>

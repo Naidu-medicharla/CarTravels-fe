@@ -106,11 +106,11 @@ export const Footer: React.FC = () => {
               }
             >
               <ul className="space-y-4 text-sm">
-                <li><Link to="/services/airport" className="hover:text-primary transition-colors">Airport Transfers</Link></li>
-                <li><Link to="/services/corporate" className="hover:text-primary transition-colors">Corporate Travel</Link></li>
-                <li><Link to="/services/wedding" className="hover:text-primary transition-colors">Wedding Chauffeurs</Link></li>
-                <li><Link to="/services/outstation" className="hover:text-primary transition-colors">Outstation Trips</Link></li>
-                <li><Link to="/services/temple" className="hover:text-primary transition-colors">Temple Visits</Link></li>
+                <li><Link to="/services#airport" className="hover:text-primary transition-colors">Airport Transfers</Link></li>
+                <li><Link to="/services#local" className="hover:text-primary transition-colors">Corporate Travel</Link></li>
+                <li><Link to="/services#wedding" className="hover:text-primary transition-colors">Wedding Chauffeurs</Link></li>
+                <li><Link to="/services#outstation" className="hover:text-primary transition-colors">Outstation Trips</Link></li>
+                <li><Link to="/services#temple" className="hover:text-primary transition-colors">Temple Visits</Link></li>
               </ul>
             </FooterAccordion>
           </div>

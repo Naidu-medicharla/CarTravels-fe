@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ArrowRight, PhoneCall, Mail, CheckCircle2, Ticket, Clock, CheckCircle } from 'lucide-react';
+import { ChevronDown, ArrowRight, PhoneCall, Mail, CheckCircle2, Ticket, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import { api, TicketOut } from '../lib/api';
+import { useGlobalData } from '../context/GlobalDataContext';
+import contactBg from '../assets/contact_section.jpg';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -25,16 +27,13 @@ export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', subject: '', message: ''
   });
-  const [myTickets, setMyTickets] = useState<TicketOut[]>([]);
+  const { customerTickets: myTickets, setCustomerTickets: setMyTickets, isDataLoading } = useGlobalData();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const token = localStorage.getItem('auth_token');
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (token) {
-      api.getMyTickets(token).then(setMyTickets).catch(console.error);
-    }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -78,7 +77,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#090909] min-h-screen font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black pt-20">
+    <div className="bg-[#090909] min-h-screen font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
       
       {/* 1. HERO SECTION */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
@@ -88,29 +87,24 @@ export const Contact: React.FC = () => {
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center pointer-events-none"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.1.0&q=100&w=2560&auto=format&fit=crop")',
-            filter: 'brightness(0.35)'
+            backgroundImage: `linear-gradient(rgba(8,8,8,.72), rgba(8,8,8,.72)), url(${contactBg})`
           }}
         />
         
-        <div className="relative z-10 container mx-auto px-6 mt-16 text-center flex flex-col items-center">
+        {/* Bottom Fade Gradient to blend into the next section */}
+        <div className="absolute inset-x-0 bottom-0 h-48 lg:h-64 bg-gradient-to-t from-[#090909] to-transparent z-[5] pointer-events-none" />
+        
+        <div className="relative z-10 container mx-auto px-6 mt-12 mb-6 text-center flex flex-col items-center">
           <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="flex flex-col items-center max-w-4xl">
-            <motion.h3 variants={fadeInUp} className="text-[10px] uppercase tracking-[0.4em] text-[#D4AF37] mb-8 font-bold">
+            <motion.h3 variants={fadeInUp} className="text-[10px] uppercase tracking-[0.4em] text-[#D4AF37] mb-12 md:mb-8 font-bold">
               CONCIERGE DESK
             </motion.h3>
-            <motion.h1 variants={fadeInUp} className="font-heading text-4xl md:text-6xl lg:text-[72px] leading-tight font-light mb-10 text-white/90">
+            <motion.h1 variants={fadeInUp} className="font-heading text-4xl md:text-6xl lg:text-[72px] leading-tight font-light mb-12 md:mb-10 text-white/90">
               Luxury Begins<br/>With a<br/>Conversation.
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-white/60 text-base md:text-lg leading-relaxed mb-12 max-w-2xl font-light">
+            <motion.p variants={fadeInUp} className="text-white/60 text-base md:text-lg leading-relaxed mb-6 max-w-lg font-light">
               Speak to our dedicated concierge team. Whether you need immediate assistance, have a special request, or wish to explore corporate partnerships, we are at your service 24/7.
             </motion.p>
-            <motion.button
-              variants={fadeInUp}
-              onClick={() => document.getElementById('contact-methods')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group border border-[#D4AF37]/50 bg-[#D4AF37]/5 h-14 md:h-16 px-10 flex items-center justify-center text-xs tracking-[0.2em] uppercase font-bold hover:bg-[#D4AF37] hover:text-black transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
-            >
-              Get In Touch
-            </motion.button>
           </motion.div>
         </div>
 
@@ -121,6 +115,7 @@ export const Contact: React.FC = () => {
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20 text-white/40 cursor-pointer"
           onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
         >
+          <div className="w-8 h-[1px] bg-white/40 mb-3" />
           <span className="text-[9px] uppercase tracking-[0.3em] font-bold mb-2">Scroll</span>
           <span className="text-[10px]">↓</span>
         </motion.div>
@@ -253,7 +248,14 @@ export const Contact: React.FC = () => {
           </form>
 
           {/* My Tickets Section */}
-          {token && myTickets.length > 0 && (
+          {token && isDataLoading ? (
+            <div className="flex justify-center items-center h-64 mt-24">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+                <p className="text-white font-heading font-medium">Loading History...</p>
+              </div>
+            </div>
+          ) : token && myTickets.length > 0 ? (
             <div className="mt-24">
               <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] mb-6 font-bold text-center">My Inquiry History</h3>
               <div className="flex flex-col gap-4">
@@ -280,7 +282,7 @@ export const Contact: React.FC = () => {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
         </div>
       </section>

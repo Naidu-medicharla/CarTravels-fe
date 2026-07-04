@@ -115,9 +115,10 @@ export const About: React.FC = () => {
             <motion.button
               variants={fadeInUp}
               onClick={() => navigate('/book')}
-              className="group border border-[#D4AF37]/50 px-10 py-4 h-14 text-xs tracking-[0.2em] uppercase hover:bg-[#D4AF37] hover:text-black transition-colors duration-500"
+              className="group border border-white/30 text-white px-8 py-4 h-14 flex items-center gap-3 text-xs tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all duration-500"
             >
-              Reserve Your Journey
+              <span>Reserve Your Journey</span>
+              <ArrowRight size={16} className="transform -translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
             </motion.button>
           </motion.div>
         </div>
@@ -224,7 +225,7 @@ export const About: React.FC = () => {
               <p className="text-white/80 text-sm md:text-base leading-relaxed mb-12 max-w-xl">
                 Whether it's a late-night airport pickup or an early morning executive transfer, our dispatch team is ready 24/7. Transparent pricing, flawless punctuality, and zero compromises.
               </p>
-              <button onClick={() => navigate('/book')} className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] font-bold hover:text-[#D4AF37] text-white transition-colors pb-1 border-b border-transparent hover:border-[#D4AF37]">
+              <button onClick={() => navigate('/cars')} className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] font-bold hover:text-[#D4AF37] text-white transition-colors pb-1 border-b border-transparent hover:border-[#D4AF37]">
                 CONTINUE <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </motion.div>
@@ -418,47 +419,21 @@ export const About: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row gap-6">
             <button
-              onClick={() => navigate('/book')}
+              onClick={() => navigate('/cars')}
               className="px-10 py-5 bg-white text-black text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:bg-[#D4AF37] hover:scale-105 duration-300"
             >
               Reserve Journey
             </button>
-            <button
-              onClick={() => navigate('/contact')}
+            <a
+              href="tel:+919876543210"
               className="px-10 py-5 bg-transparent border border-white/20 text-white text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:bg-white/10 flex items-center justify-center gap-3"
             >
               <Phone size={14} />
               Call Now
-            </button>
+            </a>
           </div>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="py-12 border-t border-white/10 bg-[#050505]">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <span className="font-heading text-2xl tracking-widest text-white">VIBE TRAVELS</span>
-              <span className="text-[#D4AF37] text-[9px] uppercase tracking-[0.3em] font-bold">Premium Chauffeur Services</span>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/50">
-              <span className="hover:text-white cursor-pointer transition-colors">Airport</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Wedding</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Corporate</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Temple</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Outstation</span>
-            </div>
-
-            <div className="flex gap-6 text-[10px] uppercase tracking-[0.2em] text-white/50">
-              <span className="hover:text-white cursor-pointer transition-colors">Instagram</span>
-              <span className="hover:text-white cursor-pointer transition-colors">LinkedIn</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Email</span>
-            </div>
-          </div>
-        </div>
-      </footer>
 
     </div>
   );

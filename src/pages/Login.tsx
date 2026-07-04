@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, ArrowRight, User, Phone, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, Phone, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../components/Feedback/ToastContext';
 import { api } from '../lib/api';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -21,20 +21,43 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoggedIn, user } = useAuth();
   const { addToast } = useToast();
   const redirect = queryParams.get('redirect') || '/';
+
+  React.useEffect(() => {
+    if (isLoggedIn && user) {
+      if (user.role?.toUpperCase() === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate(redirect, { replace: true });
+      }
+    }
+  }, [isLoggedIn, user, navigate, redirect]);
+
+  React.useEffect(() => {
+    setIsRegistering(mode === 'register');
+  }, [mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       if (isRegistering) {
         if (!name || !email || !phone || !password) {
           throw new Error('Please fill in all fields');
+        }
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+          throw new Error('Please enter a valid email address');
+        }
+        if (phone.length < 10) {
+          throw new Error('Please enter a valid phone number');
         }
         await api.register({ name, email, phone, password });
         addToast('success', 'Registration successful! Please log in.');
@@ -48,14 +71,11 @@ export const Login: React.FC = () => {
         const data = await api.login({ email, password });
         login(data.access_token, data.user);
         addToast('success', `Welcome back, ${data.user.name || 'User'}!`);
-        if (data.user.role === 'ADMIN' && redirect === '/') {
-          navigate('/admin');
-        } else {
-          navigate(redirect);
-        }
+        // Note: The useEffect above will handle the actual navigation 
+        // once login() updates the context state!
       }
     } catch (err: any) {
-      addToast('error', err.message || 'An error occurred');
+      setError(err.message || 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -67,6 +87,7 @@ export const Login: React.FC = () => {
     setPassword('');
     setName('');
     setPhone('');
+    setError(null);
   };
 
   return (
@@ -108,6 +129,17 @@ export const Login: React.FC = () => {
             {isRegistering ? 'Join our premium luxury experience.' : 'Sign in to continue your premium journey.'}
           </p>
         </div>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium"
+          >
+            {error}
+          </motion.div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
@@ -161,13 +193,20 @@ export const Login: React.FC = () => {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-12 pr-12 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

@@ -82,7 +82,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        heading: ['Cormorant Garamond', 'serif'],
+        heading: ['Playfair Display', 'serif'],
       }
     },
   },

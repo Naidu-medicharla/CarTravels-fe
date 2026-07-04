@@ -13,6 +13,8 @@ import {
   revenueSummary, recentBookings, recentInquiries, mockSchedule, mockBookingsList, mockInquiriesList, mockFleet, mockCustomers
 } from '../data/mockAdminData';
 import { api, DashboardDetailsResponse, AdminBooking, AvailableDriver, AdminUserDetails, AdminCarOut } from '../lib/api';
+import { useGlobalData } from '../context/GlobalDataContext';
+import { useAuth } from '../context/AuthContext';
 
 // Subcomponents
 const StatBox = ({ title, value }: { title: string, value: string | number }) => (
@@ -44,6 +46,7 @@ const StatusText = ({ status }: { status: string }) => {
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [activeFilter, setActiveFilter] = useState('All');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -92,92 +95,22 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const [dashboardData, setDashboardData] = useState<DashboardDetailsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    isDataLoading: loading,
+    adminDashboardData: dashboardData,
+    adminBookings, setAdminBookings,
+    adminCars, setAdminCars,
+    adminUsers, setAdminUsers,
+    adminTickets, setAdminTickets
+  } = useGlobalData();
   
-  const [adminBookings, setAdminBookings] = useState<AdminBooking[]>([]);
   const [adminBookingsLoading, setAdminBookingsLoading] = useState(false);
-  const [adminUsers, setAdminUsers] = useState<AdminUserDetails[]>([]);
   const [adminUsersLoading, setAdminUsersLoading] = useState(false);
-  const [adminCars, setAdminCars] = useState<AdminCarOut[]>([]);
   const [adminCarsLoading, setAdminCarsLoading] = useState(false);
-  const [adminTickets, setAdminTickets] = useState<any[]>([]);
   const [adminTicketsLoading, setAdminTicketsLoading] = useState(false);
   const [availableDrivers, setAvailableDrivers] = useState<AvailableDriver[]>([]);
-
-  React.useEffect(() => {
-    if (activeTab === 'Dashboard') {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const token = localStorage.getItem('auth_token') || '';
-          const data = await api.getDashboardDetails(token);
-          setDashboardData(data);
-        } catch (e) {
-          console.error('Failed to fetch dashboard data', e);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
-    } else if (activeTab === 'Bookings') {
-      const fetchBookings = async () => {
-        setAdminBookingsLoading(true);
-        try {
-          const token = localStorage.getItem('auth_token') || '';
-          const data = await api.getAdminBookings(token);
-          setAdminBookings(data);
-        } catch (e) {
-          console.error('Failed to fetch admin bookings', e);
-        } finally {
-          setAdminBookingsLoading(false);
-        }
-      };
-      fetchBookings();
-    } else if (activeTab === 'Customers') {
-      const fetchUsers = async () => {
-        setAdminUsersLoading(true);
-        try {
-          const token = localStorage.getItem('auth_token') || '';
-          const data = await api.getAdminUsersDetails(token);
-          setAdminUsers(data);
-        } catch (e) {
-          console.error('Failed to fetch admin users', e);
-        } finally {
-          setAdminUsersLoading(false);
-        }
-      };
-      fetchUsers();
-    } else if (activeTab === 'Cars') {
-      const fetchCars = async () => {
-        setAdminCarsLoading(true);
-        try {
-          const token = localStorage.getItem('auth_token') || '';
-          const data = await api.getAdminCars(token);
-          setAdminCars(data);
-        } catch (e) {
-          console.error('Failed to fetch admin cars', e);
-        } finally {
-          setAdminCarsLoading(false);
-        }
-      };
-      fetchCars();
-    } else if (activeTab === 'Support / Inquiries') {
-      const fetchTickets = async () => {
-        setAdminTicketsLoading(true);
-        try {
-          const token = localStorage.getItem('auth_token') || '';
-          const data = await api.getAdminTickets(token);
-          setAdminTickets(data);
-        } catch (e) {
-          console.error('Failed to fetch admin tickets', e);
-        } finally {
-          setAdminTicketsLoading(false);
-        }
-      };
-      fetchTickets();
-    }
-  }, [activeTab]);
+  
+  // Data is now fetched globally upon login!
 
   // Drawer State - Driver
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -493,7 +426,10 @@ export const AdminDashboard: React.FC = () => {
     if (loading || !dashboardData) {
       return (
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+            <p className="text-white font-heading font-medium">Loading Initial Dashboard Data...</p>
+          </div>
         </div>
       );
     }
@@ -690,7 +626,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const renderBookingsPlaceholder = () => {
-    if (adminBookingsLoading) {
+    if (loading) {
       return (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
@@ -1228,25 +1164,17 @@ export const AdminDashboard: React.FC = () => {
         </div>
         
         <div className="p-4 border-t border-white/5 mt-auto space-y-4">
-          <div className="flex flex-col gap-2 mb-4 px-2">
-            <button onClick={() => navigate('/')} className="flex items-center gap-3 text-sm font-medium text-white/60 hover:text-white transition-colors">
-              <Home size={16} /> Home
-            </button>
-            <button onClick={() => navigate('/profile')} className="flex items-center gap-3 text-sm font-medium text-white/60 hover:text-white transition-colors">
-              <User size={16} /> My Profile
-            </button>
-          </div>
           {/* Profile inside sidebar */}
           <div className="flex items-center gap-3 px-2 pt-2 border-t border-white/5">
             <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center font-bold text-black shrink-0">
-              B
+              {user?.name?.charAt(0).toUpperCase() || 'A'}
             </div>
-            <div>
-              <span className="block text-sm font-bold text-white">Bunny</span>
-              <span className="block text-[10px] uppercase text-white/50 tracking-wider">Admin</span>
+            <div className="overflow-hidden">
+              <span className="block text-sm font-bold text-white truncate">{user?.name || 'Admin'}</span>
+              <span className="block text-[10px] uppercase text-white/50 tracking-wider">System Admin</span>
             </div>
           </div>
-          <button className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+          <button onClick={() => { logout(); navigate('/login', { replace: true }); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
             Logout
           </button>
         </div>

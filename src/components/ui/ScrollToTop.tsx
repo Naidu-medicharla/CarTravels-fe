@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ScrollToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { pathname } = useLocation();
+
+  // Scroll to top automatically when the route changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant' // Instant scroll so there's no visible jump on page load
+    });
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {

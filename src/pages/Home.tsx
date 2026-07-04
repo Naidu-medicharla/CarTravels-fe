@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Users, Search, CheckCircle2, ArrowRight, ChevronDown, Star, CarFront, BadgeCheck, Headset, IndianRupee } from 'lucide-react';
+import { MapPin, Calendar, Users, Search, CheckCircle2, ArrowRight, ChevronDown, Star, CarFront, BadgeCheck, Headset, IndianRupee, Car, CheckCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,7 +45,8 @@ export const Home: React.FC = () => {
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-[position:30%_center] md:bg-[position:calc(130%_+_60px)_center]"
           style={{
-            backgroundImage: `url(${bgImage})`
+            backgroundImage: `url(${bgImage})`,
+            filter: 'brightness(0.8)'
           }}
         />
 
@@ -87,7 +88,7 @@ export const Home: React.FC = () => {
                 <span className="text-foreground font-medium text-sm ml-3">4.9</span>
                 <span className="text-muted-foreground text-sm ml-2">| 12,000+ Satisfied Travelers</span>
               </div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground flex gap-4">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground flex flex-wrap gap-x-4 gap-y-2">
                 <span>Corporate</span>
                 <span className="text-white/20">|</span>
                 <span>Airport</span>
@@ -111,7 +112,7 @@ export const Home: React.FC = () => {
               { value: "24/7", label: "Availability" },
               { value: "10+", label: "Cities" }
             ].map((stat, i) => (
-              <div key={i} className="glass-panel px-8 py-5 w-[220px] text-right">
+              <div key={i} className="px-8 py-5 w-[220px] text-right">
                 <div className="text-2xl font-heading text-primary mb-1">{stat.value}</div>
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{stat.label}</div>
               </div>
@@ -133,145 +134,164 @@ export const Home: React.FC = () => {
           </motion.div>
         </motion.div>
 
+        {/* Seamless Bottom Gradient Blend */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent to-[#080808] z-0 pointer-events-none" />
       </section>
 
 
-      {/* Why Choose Us */}
-      <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.01]">
-        <div className="container px-6 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
+      {/* Immersive Video Section (Luxury Difference & Booking Journey) */}
+      <section className="relative w-full bg-[#080808]">
+        {/* Seamless Top Gradient Blend */}
+        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-[#080808] to-transparent z-10 pointer-events-none" />
+        
+        {/* Persistent Background Video (Scrolling with content) */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover object-top filter brightness-[0.20] scale-105"
           >
-            <h2 className="font-heading font-medium text-3xl md:text-4xl text-white mb-4">Why <span className="text-primary">Vibe Travels</span></h2>
-            <p className="text-muted-foreground text-base md:text-lg">We don't just rent cars; we provide a premium lifestyle experience.</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { icon: <CarFront size={20} className="text-primary" />, title: "Luxury Fleet", desc: "Top-tier vehicles from world-class brands." },
-              { icon: <BadgeCheck size={20} className="text-primary" />, title: "Verified Drivers", desc: "Professional, vetted, and courteous chauffeurs." },
-              { icon: <Headset size={20} className="text-primary" />, title: "24/7 Support", desc: "Round the clock support for your peace of mind." },
-              { icon: <IndianRupee size={20} className="text-primary" />, title: "Transparent Pricing", desc: "No hidden charges, pure premium value." }
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                className="glass-panel p-6 rounded-2xl border-white/5 hover:border-primary/30 transition-colors group flex flex-col items-center text-center md:items-start md:text-left"
-              >
-                <div className="w-12 h-12 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                  {feature.icon}
-                </div>
-                <h3 className="font-heading font-bold text-lg text-white mb-2">{feature.title}</h3>
-                <p className="text-base text-muted-foreground">{feature.desc}</p>
+            <source src="/luxury.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          {/* Subtle gradient overlay to blend edges if needed */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/50 via-transparent to-[#0a0a0a]/80" />
+        </div>
+        
+        {/* Content Layers (scrolling normally) */}
+        <div className="relative z-10">
+          {/* The Luxury Difference Content */}
+          <div className="w-full min-h-[60vh] md:min-h-screen flex items-center justify-center py-20 md:py-32">
+            <div className="container px-6 md:px-8 text-center max-w-4xl mx-auto mt-12 md:mt-0">
+              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1 }}>
+                <h2 className="font-heading font-medium text-4xl md:text-6xl text-white mb-6 md:mb-8 drop-shadow-lg">The <span className="text-primary">Luxury Difference</span></h2>
+                <p className="text-white/90 text-base md:text-2xl leading-relaxed mb-8 md:mb-12 font-light drop-shadow-md">
+                  Experience seamless airport transfers, outstation journeys, corporate travel, and premium chauffeur services. Every ride is designed for comfort, reliability, and elegance, ensuring your journey is as exceptional as your destination.
+                </p>
+                <Button onClick={() => navigate('/cars')} className="bg-primary text-black hover:bg-primary/90 hover:scale-105 font-bold tracking-widest uppercase h-14 px-12 rounded-none transition-all duration-300">
+                  Explore Fleet
+                </Button>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 md:py-24 border-t border-white/5 bg-[#0a0a0a]">
-        <div className="container px-6 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="font-heading font-bold text-3xl md:text-4xl text-white mb-4">How It <span className="text-primary">Works</span></h2>
-            <p className="text-muted-foreground text-base md:text-lg">Your dream ride is just a few clicks away.</p>
-          </motion.div>
-
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-            {[
-              { step: "①", title: "Choose Car" },
-              { step: "②", title: "Select Date" },
-              { step: "③", title: "Secure Payment" },
-              { step: "④", title: "Enjoy Ride" }
-            ].map((item, i) => (
-              <React.Fragment key={i}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="w-full md:w-48 p-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:border-primary/50 transition-colors"
-                >
-                  <span className="text-xl text-primary">{item.step}</span>
-                  <span className="font-bold text-white text-sm md:text-base">{item.title}</span>
-                </motion.div>
-                {i < 3 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 + 0.1 }}
-                    className="w-px h-6 bg-primary/40 md:w-8 md:h-px my-1 md:my-0"
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 md:py-24 border-t border-white/5 bg-white/[0.02]">
-        <div className="container px-6 md:px-8 max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-8"
-          >
-            <div className="flex justify-center gap-1 mb-6 text-primary">
-              {[1, 2, 3, 4, 5].map(i => <Star key={i} size={20} fill="currentColor" />)}
             </div>
+          </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="min-h-[160px] py-8 px-6 md:px-12 glass-panel rounded-3xl mx-auto max-w-2xl flex flex-col justify-center cursor-grab active:cursor-grabbing"
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={1}
-                onDragEnd={(e, { offset, velocity }) => {
-                  const swipe = offset.x;
-                  if (swipe < -50) {
-                    setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-                  } else if (swipe > 50) {
-                    setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-                  }
-                }}
-              >
-                <p className="text-xl md:text-2xl text-white font-medium italic mb-8 leading-relaxed">"{testimonials[activeTestimonial].text}"</p>
-                <p className="text-base text-primary uppercase tracking-widest font-bold">— {testimonials[activeTestimonial].author}</p>
+          {/* Booking Journey Timeline Content - Minimal Editorial Luxury */}
+          <div className="w-full min-h-screen flex items-center justify-center py-24 md:py-40">
+            <div className="container px-4 md:px-8 w-full max-w-4xl mx-auto flex flex-col items-center">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20 md:mb-32">
+                <h2 className="font-heading font-medium text-4xl md:text-5xl lg:text-[64px] text-[#F5F5F5] tracking-tight drop-shadow-lg leading-tight mx-auto max-w-none">Your <span className="text-[#C9A227]">Journey</span> Starts Here</h2>
               </motion.div>
-            </AnimatePresence>
-
-            <div className="flex justify-center gap-2 mt-8">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveTestimonial(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${i === activeTestimonial ? 'bg-primary w-6' : 'bg-white/20'}`}
+          
+              <div className="relative w-full flex flex-col items-center">
+                {/* Center Gold Line */}
+                <motion.div 
+                  initial={{ height: 0 }} whileInView={{ height: '100%' }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute top-0 w-px bg-[#C9A227]/50 z-0 origin-top"
                 />
-              ))}
+
+                {[
+                  { icon: <Car size={26} strokeWidth={1.5} />, title: "Select Vehicle", desc: "Choose from our premium fleet." },
+                  { icon: <Calendar size={26} strokeWidth={1.5} />, title: "Schedule Date", desc: "Choose pickup and destination." },
+                  { icon: <CheckCircle size={26} strokeWidth={1.5} />, title: "Confirm Booking", desc: "Secure online payment." },
+                  { icon: <Sparkles size={26} strokeWidth={1.5} />, title: "Enjoy Ride", desc: "Relax while your chauffeur handles everything." }
+                ].map((item, i) => {
+                  const isLeft = i % 2 === 0;
+                  return (
+                    <div key={i} className="relative z-10 w-full flex items-center justify-center mb-[130px] md:mb-[150px] last:mb-0">
+                      
+                      {/* Left Content */}
+                      <div className="flex-1 flex justify-end pr-6 md:pr-16">
+                        {isLeft && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8, delay: 0.3 }}
+                            className="text-right max-w-[200px] md:max-w-[220px]"
+                          >
+                            <h4 className="font-sans text-[#F5F5F5] font-semibold text-[12px] md:text-[14px] uppercase tracking-[0.2em] mb-2 md:mb-3">{item.title}</h4>
+                            <p className="font-sans text-[rgba(255,255,255,0.78)] text-xs md:text-sm font-light leading-relaxed">{item.desc}</p>
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* Center Icon (Glowing when active) */}
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.9, boxShadow: "0px 0px 0px rgba(201,162,39,0)" }} 
+                        whileInView={{ opacity: 1, scale: 1, boxShadow: "0px 0px 25px rgba(201,162,39,0.25)" }} 
+                        viewport={{ once: true, margin: "-100px" }} 
+                        transition={{ duration: 0.8, delay: 0.1 }}
+                        className="w-[64px] h-[64px] md:w-[72px] md:h-[72px] shrink-0 rounded-full border border-[#C9A227]/40 text-[#C9A227] flex items-center justify-center bg-[#050505] z-10 relative"
+                      >
+                        {item.icon}
+                      </motion.div>
+
+                      {/* Right Content */}
+                      <div className="flex-1 flex justify-start pl-6 md:pl-16">
+                        {!isLeft && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8, delay: 0.3 }}
+                            className="text-left max-w-[200px] md:max-w-[220px]"
+                          >
+                            <h4 className="font-sans text-[#F5F5F5] font-semibold text-[12px] md:text-[14px] uppercase tracking-[0.2em] mb-2 md:mb-3">{item.title}</h4>
+                            <p className="font-sans text-[rgba(255,255,255,0.78)] text-xs md:text-sm font-light leading-relaxed">{item.desc}</p>
+                          </motion.div>
+                        )}
+                      </div>
+                      
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Timeline CTA */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.5 }}
+                className="mt-32 md:mt-40 text-center flex flex-col items-center"
+              >
+                <h3 className="font-heading text-4xl md:text-5xl text-[#F5F5F5] mb-10 drop-shadow-lg">Your Chauffeur Awaits</h3>
+                <Button onClick={() => navigate('/cars')} className="bg-transparent border border-[#C9A227] text-[#C9A227] hover:bg-[#C9A227] hover:text-[#050505] transition-all duration-500 text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] h-14 px-12 rounded-none">
+                  Reserve Your Ride
+                </Button>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
+
+          {/* Large Testimonial Showcase Content */}
+          <div className="w-full min-h-[60vh] md:min-h-screen flex items-center justify-center py-20 md:py-32">
+            <div className="container px-6 max-w-5xl text-center">
+              <div className="text-primary text-8xl font-heading mb-4 opacity-60 h-16 leading-none">"</div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTestimonial}
+                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.5 }}
+                  className="min-h-[250px] flex flex-col justify-center cursor-grab active:cursor-grabbing"
+                  drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={1}
+                  onDragEnd={(e, { offset }) => {
+                    if (offset.x < -50) setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+                    else if (offset.x > 50) setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+                  }}
+                >
+                  <h3 className="text-2xl md:text-4xl text-[#F5F5F5] font-light italic leading-relaxed mb-12 drop-shadow-lg">
+                    {testimonials[activeTestimonial].text}
+                  </h3>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex gap-1 text-[#C9A227] mb-3 drop-shadow-md">
+                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={18} fill="currentColor" />)}
+                    </div>
+                    <p className="text-[#C9A227] font-bold uppercase tracking-widest text-sm drop-shadow-md">— {testimonials[activeTestimonial].author}</p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+              <div className="flex justify-center gap-4 mt-12">
+                {testimonials.map((_, i) => (
+                  <button key={i} onClick={() => setActiveTestimonial(i)} className={`w-12 h-1 transition-all duration-300 ${i === activeTestimonial ? 'bg-[#C9A227]' : 'bg-[#C9A227]/20 hover:bg-[#C9A227]/50'}`} />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
 
     </div>
   );

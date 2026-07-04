@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { api, type BookingPreview, type UserProfileResponse } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useGlobalData } from '@/context/GlobalDataContext';
 import { getFallbackImage } from '@/lib/carImages';
 import { getMembershipTier } from '@/lib/membership';
 import * as Popover from '@radix-ui/react-popover';
@@ -22,29 +23,25 @@ const steps = [
 
 export const BookingFlow: React.FC = () => {
   const { user } = useAuth();
+  const { customerProfile: profile, customerCars } = useGlobalData();
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const initialType = (queryParams.get('type') as 'rental' | 'drop') || 'rental';
   const carNumber = queryParams.get('car') || 'AP09XX1234';
+  const initialStep = parseInt(queryParams.get('step') || '1', 10);
   
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [bookingType, setBookingType] = useState<'rental' | 'drop'>(initialType);
+
+
 
   // Form State
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [driverRequired, setDriverRequired] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi'>('card');
-  const [profile, setProfile] = useState<UserProfileResponse | null>(null);
-
-  React.useEffect(() => {
-    if (user?.email) {
-      api.getCustomerProfile(user.email)
-        .then(data => setProfile(data))
-        .catch(err => console.error(err));
-    }
-  }, [user]);
+  // Profile is now fetched globally
 
   const discountPercentage = profile ? getMembershipTier(profile.total_trips).discountPercentage : 5;
 
@@ -62,19 +59,29 @@ export const BookingFlow: React.FC = () => {
   const [isReturnOpen, setIsReturnOpen] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'error' | 'success'} | null>(null);
 
+  const goToStep = (step: number, replaceState: boolean = false) => {
+    const params = new URLSearchParams(location.search);
+    params.set('step', step.toString());
+    navigate({ search: params.toString() }, { replace: replaceState });
+  };
+
+  React.useEffect(() => {
+    const step = parseInt(new URLSearchParams(location.search).get('step') || '1', 10);
+    if (step !== currentStep) {
+      setCurrentStep(step);
+    }
+  }, [location.search, currentStep]);
+
   const showToast = (message: string, type: 'error' | 'success' = 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
   };
 
   React.useEffect(() => {
-    const token = localStorage.getItem('auth_token');
     if (carNumber) {
-      if (token) {
-        api.getAllCars(token).then(cars => {
-          const car = cars.find(c => c.car_number === carNumber);
-          if (car) setSelectedCar(car);
-        }).catch(err => console.error(err));
+      if (customerCars.length > 0) {
+        const car = customerCars.find(c => c.car_number === carNumber);
+        if (car) setSelectedCar(car);
       }
       
       api.getCarAvailability(carNumber).then(res => {
@@ -85,7 +92,7 @@ export const BookingFlow: React.FC = () => {
         }
       }).catch(err => console.error(err));
     }
-  }, [carNumber]);
+  }, [carNumber, customerCars]);
 
   const nextStep = async () => {
     if (currentStep === 1) {
@@ -121,7 +128,7 @@ export const BookingFlow: React.FC = () => {
           driver_required: driverRequired
         });
         setPreviewData(res);
-        setCurrentStep(2);
+        goToStep(2);
       } catch (err: any) {
         setPreviewError(err.message || 'Failed to fetch preview');
         showToast(err.message || 'Failed to fetch preview');
@@ -129,7 +136,7 @@ export const BookingFlow: React.FC = () => {
         setLoadingPreview(false);
       }
     } else {
-      setCurrentStep(prev => Math.min(prev + 1, steps.length));
+      goToStep(Math.min(currentStep + 1, steps.length));
     }
   };
 
@@ -163,7 +170,18 @@ export const BookingFlow: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 5000));
       const res = await api.confirmRentalBooking(token, carNumber, payload);
       setConfirmedBookingData(res);
-      setCurrentStep(3);
+      const randomId = Math.random().toString(36).substr(2, 6).toUpperCase();
+      const bookingId = res?.id || res?.booking_id || randomId;
+      navigate(`/booking-success/${bookingId}`, { 
+        replace: true,
+        state: { 
+          booking: res,
+          car: selectedCar,
+          dates: { pickup: pickupDate, return: returnDate },
+          discount: discountAmount,
+          preview: previewData
+        }
+      });
     } catch (err: any) {
       showToast(err.message || 'Failed to confirm booking');
     } finally {
@@ -171,7 +189,11 @@ export const BookingFlow: React.FC = () => {
     }
   };
 
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const prevStep = () => {
+    if (currentStep > 1) {
+      navigate(-1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-28 pb-8 relative overflow-hidden flex flex-col items-center">
@@ -180,13 +202,13 @@ export const BookingFlow: React.FC = () => {
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-green-500/10 border-green-500/20 text-green-400'}`}
+            className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] flex items-start sm:items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border w-[90vw] max-w-md ${toast.type === 'error' ? 'bg-red-950/80 border-red-500/30 text-red-100' : 'bg-green-950/80 border-green-500/30 text-green-100'}`}
           >
-            {toast.type === 'error' ? <X size={20} className="text-red-400 flex-shrink-0" /> : <CheckCircle2 size={20} className="text-green-400 flex-shrink-0" />}
-            <span className="font-medium text-sm whitespace-nowrap">{toast.message}</span>
+            {toast.type === 'error' ? <X size={20} className="text-red-400 flex-shrink-0 mt-0.5 sm:mt-0" /> : <CheckCircle2 size={20} className="text-green-400 flex-shrink-0 mt-0.5 sm:mt-0" />}
+            <span className="font-medium text-[13px] sm:text-sm leading-snug text-left">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -805,95 +827,6 @@ export const BookingFlow: React.FC = () => {
               </motion.div>
             )}
 
-            {currentStep === 3 && (
-              <motion.div 
-                key="step3"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-2xl mx-auto"
-              >
-                <div className="flex flex-col items-center mb-8">
-                  <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 text-primary relative">
-                    <div className="absolute inset-0 border-2 border-primary rounded-full animate-ping opacity-20 duration-1000" />
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-                    >
-                      <CheckCircle2 size={40} className="stroke-[3]" />
-                    </motion.div>
-                  </div>
-                  <h2 className="font-heading font-bold text-3xl md:text-4xl text-white mb-2">Booking Confirmed</h2>
-                  <p className="text-primary font-medium tracking-wide">#{Math.random().toString(36).substr(2, 6).toUpperCase()}-24</p>
-                </div>
-
-                {/* Booking Summary Card */}
-                <div className="glass-panel rounded-2xl p-6 mb-8 text-left">
-                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
-                    <div className="w-20 h-12 relative rounded-md flex items-center justify-center bg-black/40 border border-white/10 px-1">
-                      <img 
-                        src={selectedCar?.images?.[0] || (selectedCar ? getFallbackImage(selectedCar.brand, selectedCar.model) : "https://freepngimg.com/thumb/car/3-2-car-free-download-png.png")} 
-                        alt="Vehicle" 
-                        className="w-full h-full object-contain filter drop-shadow-lg" 
-                      />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white text-lg">{selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : 'Luxury Vehicle'}</h4>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{selectedCar?.category || 'Premium Class'}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Pickup Date</p>
-                      <p className="text-sm font-semibold text-white">{pickupDate || 'Tomorrow'}</p>
-                      <p className="text-[11px] text-white/50 mt-0.5">09:00 AM</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Location</p>
-                      <p className="text-sm font-semibold text-white">Gachibowli</p>
-                      <p className="text-[11px] text-white/50 mt-0.5">Headquarters</p>
-                    </div>
-                    <div className="col-span-2 md:col-span-2">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Driver Status</p>
-                      {confirmedBookingData?.driver_name ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500" />
-                            <p className="text-sm font-semibold text-green-500">Driver Assigned</p>
-                          </div>
-                          <p className="text-[13px] text-white mt-1">{confirmedBookingData.driver_name} • {confirmedBookingData.driver_phone}</p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-                            <p className="text-sm font-semibold text-yellow-500">Assigning Driver...</p>
-                          </div>
-                          <p className="text-[11px] text-white/50 mt-0.5">You will be notified shortly</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-                  <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 px-8 h-12 rounded-xl">
-                    <Download className="mr-2" size={18} /> Download Invoice
-                  </Button>
-                  <Button onClick={() => navigate('/profile')} className="w-full sm:w-auto bg-primary text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] px-10 h-12 rounded-xl font-bold transition-all">
-                    <Users className="mr-2" size={18} /> Back to Dashboard
-                  </Button>
-                </div>
-
-                {/* Footer Trust Signals */}
-                <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-muted-foreground border-t border-white/10 pt-6">
-                  <span className="flex items-center gap-1.5"><Shield size={14} className="text-primary" /> Secure Booking</span>
-                  <span className="hidden sm:block">•</span>
-                  <span className="flex items-center gap-1.5"><HelpCircle size={14} className="text-primary" /> 24/7 Support</span>
-                </div>
-              </motion.div>
-            )}
           </AnimatePresence>
         </div>
 

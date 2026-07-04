@@ -12,16 +12,27 @@ import { Login } from './pages/Login';
 import { Services } from './pages/Services';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
+import { BookingSuccess } from './pages/BookingSuccess';
 import loadingVideo from './assets/landing_loading.mp4';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { AuthProvider } from './context/AuthContext';
+import { GlobalDataProvider, useGlobalData } from './context/GlobalDataContext';
 import { FleetSection } from './components/Sections/FleetSection';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Dummy page components for routing
 const Cars = () => <FleetSection />;
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
+const CustomerRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  if (user?.role?.toUpperCase() === 'ADMIN') {
+    return <Navigate to="/admin" replace />;
+  }
+  return <>{children}</>;
+};
 
 const ConditionalNavbar = () => {
   const location = useLocation();
@@ -33,7 +44,7 @@ const ConditionalFooter = () => {
   const location = useLocation();
   // Don't show footer on specific app-like pages (e.g., admin dashboard, login)
   const noFooterRoutes = ['/admin', '/login', '/book', '/profile', '/cars', '/services', '/about'];
-  if (noFooterRoutes.includes(location.pathname)) return null;
+  if (noFooterRoutes.includes(location.pathname) || location.pathname.startsWith('/booking-success')) return null;
   return <Footer />;
 };
 
@@ -52,68 +63,75 @@ function App() {
 
   return (
     <AuthProvider>
-      <AnimatePresence>
-        {showSplash && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden"
-          >
-            <div className="relative w-full max-w-lg px-4 flex items-center justify-center">
-              <video
-                ref={videoRef}
-                src={loadingVideo}
-                autoPlay
-                muted
-                playsInline
-                onEnded={() => setShowSplash(false)}
-                className="w-full max-w-xs md:max-w-md rounded-lg shadow-2xl object-contain"
-              />
-            </div>
-          </motion.div>
+      <GlobalDataProvider>
+        <AnimatePresence>
+          {showSplash && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden"
+            >
+              <div className="relative w-full max-w-lg px-4 flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  src={loadingVideo}
+                  autoPlay
+                  muted
+                  playsInline
+                  onEnded={() => setShowSplash(false)}
+                  className="w-full max-w-xs md:max-w-md rounded-lg shadow-2xl object-contain"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!showSplash && (
+          <Router>
+            <ToastProvider>
+              <div className="flex flex-col min-h-screen bg-background">
+                <ConditionalNavbar />
+                <ScrollToTop />
+
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<CustomerRoute><Home /></CustomerRoute>} />
+                    <Route path="/book" element={
+                      <ProtectedRoute requiredRole="USER">
+                        <BookingFlow />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/booking-success/:bookingId" element={
+                      <ProtectedRoute requiredRole="USER">
+                        <BookingSuccess />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedRoute requiredRole="USER">
+                        <CustomerProfile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/cars" element={<CustomerRoute><Cars /></CustomerRoute>} />
+                    <Route path="/services" element={<CustomerRoute><Services /></CustomerRoute>} />
+                    <Route path="/about" element={<CustomerRoute><About /></CustomerRoute>} />
+                    <Route path="/contact" element={<CustomerRoute><Contact /></CustomerRoute>} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="*" element={<CustomerRoute><Home /></CustomerRoute>} />
+                  </Routes>
+                </main>
+
+                <ConditionalFooter />
+              </div>
+            </ToastProvider>
+          </Router>
         )}
-      </AnimatePresence>
-
-      {!showSplash && (
-        <Router>
-          <ToastProvider>
-            <div className="flex flex-col min-h-screen bg-background">
-              <ConditionalNavbar />
-              <ScrollToTop />
-
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/book" element={
-                    <ProtectedRoute>
-                      <BookingFlow />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <CustomerProfile />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/cars" element={<Cars />} />
-                  <Route path="/services" element={<Services />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="*" element={<Home />} />
-                </Routes>
-              </main>
-
-              <ConditionalFooter />
-            </div>
-          </ToastProvider>
-        </Router>
-      )}
+      </GlobalDataProvider>
     </AuthProvider>
   );
 }
