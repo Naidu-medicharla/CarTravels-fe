@@ -180,7 +180,7 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="fixed inset-0 h-screen w-screen bg-black/40 backdrop-blur-md z-[1000] flex justify-end"
+            className="fixed inset-0 h-[100dvh] w-screen bg-black/40 backdrop-blur-md z-[1000] flex justify-end"
           >
             {/* Slide-in Menu Panel */}
             <motion.div
