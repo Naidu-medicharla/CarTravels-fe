@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, CreditCard, History, Settings, LogOut, ShieldCheck, MapPin, Calendar, Edit2, Upload, Crown, Star, ChevronRight, Loader2, CheckCircle2, Home, Plus, Car, HelpCircle, Phone, Mail, Lock, Eye, EyeOff, Bell, Globe, Shield, X } from 'lucide-react';
+import { User, CreditCard, History, Settings, LogOut, ShieldCheck, MapPin, Calendar, Edit2, Upload, Crown, Star, ChevronRight, Loader2, CheckCircle2, Home, Plus, Car, HelpCircle, Phone, Mail, Lock, Eye, EyeOff, Bell, Globe, Shield, X, Search, SlidersHorizontal } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -169,7 +169,7 @@ export const CustomerProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center pt-24 pb-32">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center pt-24 pb-32">
         <Loader2 className="animate-spin text-primary w-12 h-12" />
         <span className="ml-4 text-white font-heading text-lg">Loading Profile...</span>
       </div>
@@ -177,7 +177,7 @@ export const CustomerProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-24 md:pt-32 pb-32 md:pb-24">
+    <div className="min-h-[100dvh] bg-background pt-24 md:pt-32 pb-32 md:pb-24">
       <div className="container max-w-[1400px] px-4 md:px-8">
         
         {/* --- MOBILE DASHBOARD LAYOUT --- */}
@@ -188,8 +188,8 @@ export const CustomerProfile: React.FC = () => {
            <div className="mb-4 mt-2 flex items-center justify-between">
              <div>
                <h1 className="text-base text-white/80 font-heading font-bold mb-1">Good Morning,</h1>
-               <h2 className="text-[30px] leading-none text-white font-heading font-bold mb-2">{user?.name?.split(' ')[0] || 'Venkat'}</h2>
-               <p className="text-muted-foreground text-sm">Ready for your next premium ride?</p>
+               <h2 className="text-[30px] leading-none text-white font-heading font-bold mb-2">Welcome back, {user?.name?.split(' ')[0] || 'Venkat'}</h2>
+               <p className="text-muted-foreground text-sm">Ready for your next journey?</p>
              </div>
              <NotificationBell
                unreadCount={notifs.unreadCount}
@@ -203,9 +203,9 @@ export const CustomerProfile: React.FC = () => {
            </div>
 
            {/* Compressed Profile Card */}
-           <div className="glass-panel rounded-2xl p-4 flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-primary/30 shrink-0 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
-                <User size={24} className="text-primary" />
+           <div className="glass-panel rounded-2xl p-4 flex items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center border border-primary/30 shrink-0 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
+                <User size={32} className="text-primary" />
               </div>
               <div className="flex-1">
                  <div className="flex items-center gap-2 mb-1">
@@ -225,28 +225,6 @@ export const CustomerProfile: React.FC = () => {
               </div>
            </div>
 
-           {/* Quick Actions Grid */}
-           <div className="grid grid-cols-2 gap-3 mt-2">
-             <button onClick={() => navigate('#bookings')} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
-                <History size={20} className="text-primary" />
-                <span className="text-xs font-semibold text-white">Trips</span>
-             </button>
-             <button onClick={() => navigate('#profile')} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
-                <CreditCard size={20} className="text-primary" />
-                <span className="text-xs font-semibold text-white">Payments</span>
-             </button>
-             <button className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
-                <MapPin size={20} className="text-primary" />
-                <span className="text-xs font-semibold text-white">Address</span>
-             </button>
-             <button onClick={() => setIsSettingsOpen(true)} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
-                <Settings size={20} className="text-primary" />
-                <span className="text-xs font-semibold text-white">Settings</span>
-             </button>
-           </div>
-
-           {/* Current Booking (Simulated if history exists) Removed per user request */}
-
            {/* Membership */}
            <div onClick={() => setIsTierModalOpen(true)} className="glass-panel rounded-2xl p-4 mt-2 relative overflow-hidden cursor-pointer hover:bg-white/[0.03] transition-colors">
              <div className="absolute top-0 right-0 p-2 opacity-10"><Crown size={60} className="text-primary" /></div>
@@ -261,12 +239,12 @@ export const CustomerProfile: React.FC = () => {
                <div className="w-full h-1.5 bg-black rounded-full overflow-hidden mb-2 border border-white/5">
                   <div className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" style={{width: '75%'}} />
                </div>
-               <p className="text-[10px] text-muted-foreground uppercase tracking-wider text-right">{tier?.nextTierTrips ? `${tier.nextTierTrips - profile!.total_trips} Trips to next tier` : 'Max Tier Reached'}</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider text-right">{tier?.nextTierTrips ? `${tier.nextTierTrips - profile!.total_trips} rides until next tier` : 'Max Tier Reached'}</p>
              </div>
            </div>
 
            {/* Recent Bookings */}
-           <div className="mt-4">
+           <div className="mt-4 mb-2">
              <div className="flex justify-between items-center mb-4 px-1">
                 <h3 className="font-heading font-bold text-lg text-white">Recent Trips</h3>
                 <span onClick={() => navigate('#bookings')} className="text-[10px] text-primary font-bold uppercase tracking-widest cursor-pointer">View All</span>
@@ -279,7 +257,8 @@ export const CustomerProfile: React.FC = () => {
                     </div>
                     <div className="flex-1">
                        <h4 className="font-bold text-white text-sm">{activity.car_name}</h4>
-                       <p className="text-[10px] text-muted-foreground">{activity.date}</p>
+                       <p className="text-[10px] text-muted-foreground mb-0.5">{activity.date}</p>
+                       <span className="text-[10px] text-white/50">Driver: Rahul Sharma</span>
                     </div>
                     <div className="text-right">
                        <p className="font-bold text-white text-sm">₹{activity.amount_paid.toLocaleString()}</p>
@@ -299,6 +278,26 @@ export const CustomerProfile: React.FC = () => {
              </div>
            </div>
 
+           {/* Quick Actions Grid */}
+           <div className="grid grid-cols-2 gap-3 mt-4 mb-4">
+             <button onClick={() => navigate('#bookings')} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+                <History size={20} className="text-primary" />
+                <span className="text-xs font-semibold text-white">Trips</span>
+             </button>
+             <button onClick={() => navigate('#profile')} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+                <CreditCard size={20} className="text-primary" />
+                <span className="text-xs font-semibold text-white">Payments</span>
+             </button>
+             <button className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+                <MapPin size={20} className="text-primary" />
+                <span className="text-xs font-semibold text-white">Address</span>
+             </button>
+             <button onClick={() => setIsSupportOpen(true)} className="bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+                <HelpCircle size={20} className="text-primary" />
+                <span className="text-xs font-semibold text-white">Support</span>
+             </button>
+           </div>
+
            {/* Travel Summary */}
            <div className="mt-4 mb-8">
              <h3 className="font-heading font-bold text-lg text-white mb-4 px-1">Travel Stats</h3>
@@ -308,24 +307,24 @@ export const CustomerProfile: React.FC = () => {
                    <span className="text-xl font-bold text-white">₹{profile?.total_spend?.toLocaleString() ?? 0}</span>
                 </div>
                 <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
-                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Completed</span>
-                   <span className="text-xl font-bold text-white">{profile?.total_trips ?? 0} Trips</span>
+                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Completed Trips</span>
+                   <span className="text-xl font-bold text-white">{profile?.total_trips ?? 0}</span>
                 </div>
                 <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
-                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Avg Rating</span>
-                   <span className="text-xl font-bold text-white flex items-center justify-center gap-1">{profile?.avg_rating?.toFixed(1) ?? '0.0'} <Star size={14} className="text-primary fill-primary" /></span>
+                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Member Since</span>
+                   <span className="text-xl font-bold text-white">{profile?.created_at ? new Date(profile.created_at).getFullYear() : '2026'}</span>
                 </div>
                 <div className="glass-panel rounded-xl p-4 flex flex-col justify-center items-center text-center h-24">
-                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Distance</span>
-                   <span className="text-xl font-bold text-white">-</span>
+                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Favorite Vehicle</span>
+                   <span className="text-sm font-bold text-white flex items-center justify-center gap-1 mt-1">Mercedes S-Class</span>
                 </div>
              </div>
            </div>
            
            {/* Settings & Help Footer */}
            <div className="glass-panel rounded-2xl overflow-hidden mb-8">
-             <button onClick={() => setIsSettingsOpen(true)} className="w-full flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
-                <div className="flex items-center gap-3"><Settings size={16} className="text-muted-foreground" /><span className="text-sm font-medium text-white">Settings</span></div>
+             <button onClick={notifs.openPanel} className="w-full flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                <div className="flex items-center gap-3"><Bell size={16} className="text-muted-foreground" /><span className="text-sm font-medium text-white">Notifications</span></div>
                 <ChevronRight size={16} className="text-white/30" />
              </button>
              <button onClick={() => setIsTrustOpen(true)} className="w-full flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
@@ -346,10 +345,33 @@ export const CustomerProfile: React.FC = () => {
 
           {activeTab === 'My Bookings' && (
              <div className="space-y-4 mt-2">
-                <div className="mb-6 px-1">
-                  <h2 className="font-heading font-bold text-2xl text-white">Trips</h2>
-                  <p className="text-xs text-muted-foreground mt-1">{profile?.all_bookings?.length || 0} Confirmed Trips</p>
+                <div className="mb-4 px-1 flex items-end justify-between">
+                  <div>
+                    <h2 className="font-heading font-bold text-2xl text-white">Trips</h2>
+                    <p className="text-xs text-[#D4AF37] font-semibold mt-1">{profile?.all_bookings?.length || 0} Luxury Journeys</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-0.5">₹{profile?.total_spend?.toLocaleString() ?? 0} Spent</p>
                 </div>
+
+                <div className="px-1 mb-6 space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+                    <Input placeholder="Search by Vehicle or Booking ID..." className="pl-9 pr-10 bg-white/[0.02] border-white/10 text-sm h-11 rounded-xl focus:border-[#D4AF37]/50 transition-colors" />
+                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
+                      <SlidersHorizontal size={16} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    <button className="px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-xs font-bold border border-[#D4AF37]/20 shrink-0 transition-colors">All</button>
+                    <button className="px-4 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-white text-xs font-bold border border-white/5 hover:border-white/10 shrink-0 transition-colors">Upcoming</button>
+                    <button className="px-4 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-white text-xs font-bold border border-white/5 hover:border-white/10 shrink-0 transition-colors">Completed</button>
+                    <button className="px-4 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-white text-xs font-bold border border-white/5 hover:border-white/10 shrink-0 transition-colors">Cancelled</button>
+                    <button className="ml-auto px-3 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-white border border-white/5 transition-colors shrink-0 flex items-center gap-1.5">
+                      <Calendar size={12} /> <span className="text-[10px] uppercase tracking-widest font-bold">Date</span>
+                    </button>
+                  </div>
+                </div>
+
                 {profile?.all_bookings?.length ? profile.all_bookings.slice(0, visibleTrips).map((booking, idx) => (
                    <div key={idx} className="glass-panel rounded-2xl p-4 flex flex-col gap-4 relative overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors">
                        <div className="flex justify-between items-start">
@@ -357,7 +379,10 @@ export const CustomerProfile: React.FC = () => {
                              <h4 className="font-bold text-white text-base">{booking.car_name}</h4>
                              <span className="text-[10px] text-muted-foreground font-semibold">Booking #{booking.booking_id}</span>
                           </div>
-                          <span className="text-[10px] text-white/60 font-medium">{booking.start_date}</span>
+                          <div className="text-right">
+                            <span className="text-[10px] text-white/80 font-medium block">{booking.start_date}</span>
+                            <span className="text-[10px] text-white/40 block mt-0.5">Hyderabad Airport</span>
+                          </div>
                        </div>
                        
                        <div className="w-full h-px bg-white/5 my-1" />
@@ -372,10 +397,10 @@ export const CustomerProfile: React.FC = () => {
                        <div className="w-full h-px bg-white/5 my-1" />
 
                        <div className="flex justify-between items-center">
-                         <span className="text-xs text-primary font-bold">View Details</span>
+                         <span className="text-xs text-white/50 font-medium">Driver: Rahul Sharma</span>
                          {!booking.is_trip_completed && booking.status !== 'CANCELLED' && (
-                           <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-7 text-[10px] px-4 rounded-full">
-                             Manage
+                           <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-7 text-[10px] px-4 rounded-full flex items-center gap-1">
+                             View Booking <ChevronRight size={10} />
                            </Button>
                          )}
                        </div>
@@ -383,14 +408,14 @@ export const CustomerProfile: React.FC = () => {
                 )) : (
                   <div className="text-center py-16 flex flex-col items-center justify-center glass-panel rounded-2xl">
                     <Car size={40} className="mb-4 text-white/10" />
-                    <h4 className="text-white font-bold mb-1">No trips yet.</h4>
-                    <p className="text-xs text-muted-foreground mb-4">Book your first premium ride.</p>
-                    <Button onClick={() => navigate('/')} className="bg-primary text-black h-9 text-xs font-bold rounded-full px-6">Book Ride</Button>
+                    <h4 className="text-white font-bold mb-1">No journeys yet.</h4>
+                    <p className="text-xs text-muted-foreground mb-6">Reserve your first luxury ride.</p>
+                    <Button onClick={() => navigate('/')} className="bg-primary text-black h-10 text-xs font-bold rounded-full px-8 shadow-[0_0_15px_rgba(212,175,55,0.3)]">Book Now</Button>
                   </div>
                 )}
                 {profile?.all_bookings && visibleTrips < profile.all_bookings.length && (
-                  <div className="flex justify-center mt-4 pb-4">
-                    <Button onClick={() => setVisibleTrips(prev => prev + 5)} variant="outline" className="border-white/10 text-white hover:bg-white/10 rounded-full h-9 text-xs px-6">
+                  <div className="flex justify-center mt-6 pb-4">
+                    <Button onClick={() => setVisibleTrips(prev => prev + 5)} variant="outline" className="border-white/10 text-white hover:bg-white/10 rounded-full h-10 text-xs px-8 font-bold transition-all hover:border-[#D4AF37]/50">
                       Load More Trips
                     </Button>
                   </div>

@@ -91,7 +91,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0C] flex flex-col items-center justify-center pt-24 pb-12 px-4 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#0B0B0C] flex flex-col items-center justify-center pt-24 pb-12 px-4 relative overflow-hidden">
       
       {/* Full Page Loading Overlay */}
       <AnimatePresence>

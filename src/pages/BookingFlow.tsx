@@ -58,6 +58,8 @@ export const BookingFlow: React.FC = () => {
   const [isPickupOpen, setIsPickupOpen] = useState(false);
   const [isReturnOpen, setIsReturnOpen] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'error' | 'success'} | null>(null);
+  const [dateError, setDateError] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
 
   const goToStep = (step: number, replaceState: boolean = false) => {
     const params = new URLSearchParams(location.search);
@@ -72,9 +74,13 @@ export const BookingFlow: React.FC = () => {
     }
   }, [location.search, currentStep]);
 
-  const showToast = (message: string, type: 'error' | 'success' = 'error') => {
+  const showToast = (message: string, type: 'error' | 'success' = 'error', isDateError = false) => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+    if (isDateError) setDateError(true);
+    setTimeout(() => {
+      setToast(null);
+      setDateError(false);
+    }, 3000);
   };
 
   React.useEffect(() => {
@@ -97,7 +103,7 @@ export const BookingFlow: React.FC = () => {
   const nextStep = async () => {
     if (currentStep === 1) {
       if (!pickupDate || (bookingType === 'rental' && !returnDate)) {
-        showToast('Please select the required dates');
+        showToast('Please select pickup and return dates.', 'error', true);
         return;
       }
       
@@ -165,9 +171,18 @@ export const BookingFlow: React.FC = () => {
     };
 
     setConfirmingBooking(true);
+    setLoadingStage(0);
     try {
-      // Simulate 5 seconds payment processing
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Concierge Loading Steps:
+      // 0: 0-1.5s, 1: 1.5-3s, 2: 3-4.5s, 3: 4.5-5.5s, 4: 5.5s+
+      const timers = [
+        setTimeout(() => setLoadingStage(1), 1500),
+        setTimeout(() => setLoadingStage(2), 3000),
+        setTimeout(() => setLoadingStage(3), 4500),
+        setTimeout(() => setLoadingStage(4), 5500),
+      ];
+      await new Promise(resolve => setTimeout(resolve, 6000));
+      timers.forEach(clearTimeout);
       const res = await api.confirmRentalBooking(token, carNumber, payload);
       setConfirmedBookingData(res);
       const randomId = Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -183,9 +198,8 @@ export const BookingFlow: React.FC = () => {
         }
       });
     } catch (err: any) {
-      showToast(err.message || 'Failed to confirm booking');
-    } finally {
       setConfirmingBooking(false);
+      showToast(err.message || 'Failed to confirm booking');
     }
   };
 
@@ -196,19 +210,20 @@ export const BookingFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-28 pb-8 relative overflow-hidden flex flex-col items-center">
+    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-28 pb-8 relative overflow-hidden flex flex-col items-center">
 
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-            className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] flex items-start sm:items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border w-[90vw] max-w-md ${toast.type === 'error' ? 'bg-red-950/80 border-red-500/30 text-red-100' : 'bg-green-950/80 border-green-500/30 text-green-100'}`}
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -10, x: "-50%", transition: { duration: 0.25 } }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`fixed top-24 left-1/2 z-[100] flex items-center gap-3 px-5 h-12 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-md border border-white/5 w-auto max-w-[90vw] whitespace-nowrap ${toast.type === 'error' ? 'bg-[#141414]/92 border-l-[3px] border-l-[#d64545] text-white' : 'bg-[#141414]/92 border-l-[3px] border-l-[#D4AF37] text-white'}`}
           >
-            {toast.type === 'error' ? <X size={20} className="text-red-400 flex-shrink-0 mt-0.5 sm:mt-0" /> : <CheckCircle2 size={20} className="text-green-400 flex-shrink-0 mt-0.5 sm:mt-0" />}
-            <span className="font-medium text-[13px] sm:text-sm leading-snug text-left">{toast.message}</span>
+            {toast.type === 'error' ? <X size={16} className="text-white/60" /> : <CheckCircle2 size={16} className="text-[#D4AF37]" />}
+            <span className="font-heading font-medium tracking-wide text-[13px] sm:text-sm text-white">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -220,21 +235,94 @@ export const BookingFlow: React.FC = () => {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/95 backdrop-blur-xl"
           >
-            <div className="flex flex-col items-center">
+            {/* Radial glow background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[100px]"></div>
+            </div>
+
+            <div className="relative flex flex-col items-center w-full max-w-md px-6 z-10">
               <motion.div
-                animate={{ x: [-30, 30, -30] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                className="mb-8"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="mb-10 relative"
               >
-                <img src="https://freepngimg.com/thumb/car/3-2-car-free-download-png.png" alt="Processing Car" className="w-64 object-contain filter drop-shadow-[0_0_25px_rgba(212,175,55,0.4)]" />
+                {/* Gold glow underneath */}
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-48 h-8 bg-[#D4AF37]/20 rounded-[100%] blur-xl opacity-60"></div>
+                <img src={selectedCar?.images?.[0] || getFallbackImage(selectedCar?.brand || '', selectedCar?.model || '')} alt="Processing Car" className="w-56 object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.5)] relative z-10" />
               </motion.div>
-              <div className="flex items-center gap-3">
-                <Loader2 className="animate-spin text-primary" size={32} />
-                <h3 className="font-heading text-3xl text-white">Processing Payment...</h3>
+              
+              <div className="text-center mb-12 h-24 relative w-full flex justify-center">
+                <AnimatePresence>
+                  <motion.div
+                    key={loadingStage}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute w-full"
+                  >
+                    <h3 className="font-heading text-[28px] font-bold text-white mb-2">
+                      {loadingStage === 0 && "Booking Your Ride"}
+                      {loadingStage === 1 && "Vehicle Reserved"}
+                      {loadingStage === 2 && "Assigning Your Chauffeur"}
+                      {loadingStage === 3 && "Almost Ready"}
+                      {loadingStage >= 4 && "Reservation Confirmed"}
+                    </h3>
+                    <p className="text-[#D4AF37] text-[15px] font-medium tracking-wide">
+                      {loadingStage === 0 && "We're securing your reservation."}
+                      {loadingStage === 1 && "Preparing your luxury vehicle."}
+                      {loadingStage === 2 && "Matching you with the best available chauffeur."}
+                      {loadingStage === 3 && "Generating your booking confirmation."}
+                      {loadingStage >= 4 && "Redirecting..."}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
               </div>
-              <p className="text-muted-foreground mt-3 text-lg font-medium tracking-wide">Please do not close or refresh this window.</p>
+
+              <div className="w-full h-[1px] bg-white/5 mb-6"></div>
+
+              <div className="w-full space-y-5 px-4">
+                {[
+                  { id: 0, text: "Payment Verified" },
+                  { id: 1, text: "Vehicle Reserved" },
+                  { id: 2, text: "Chauffeur Assigned" },
+                  { id: 3, text: "Booking Confirmed" }
+                ].map((task, index) => {
+                  const isCompleted = loadingStage > index;
+                  const isCurrent = loadingStage === index;
+                  
+                  return (
+                    <div key={task.id} className={`flex items-center gap-4 transition-all duration-500 ${isCompleted ? 'opacity-100' : isCurrent ? 'opacity-100' : 'opacity-30'}`}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+                        {isCompleted ? (
+                          <CheckCircle2 size={20} className="text-[#D4AF37]" />
+                        ) : isCurrent ? (
+                          <Loader2 size={18} className="text-[#D4AF37] animate-spin" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-white/30" />
+                        )}
+                      </div>
+                      <span className={`text-[15px] font-medium tracking-wide transition-colors duration-500 ${isCompleted ? 'text-white' : isCurrent ? 'text-white' : 'text-white/50'}`}>
+                        {task.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="w-full h-[1px] bg-white/5 mt-6 mb-8"></div>
+              
+              {/* Thin Progress Line */}
+              <div className="w-full max-w-[200px] h-[2px] bg-white/10 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-[#D4AF37]"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${Math.min(100, (loadingStage / 4) * 100 + 15)}%` }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                />
+              </div>
             </div>
           </motion.div>
         )}
@@ -244,7 +332,8 @@ export const BookingFlow: React.FC = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-2 tracking-wide">Complete Your <span className="text-primary">Booking</span></h1>
+          <p className="font-heading text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase mb-3">Luxury Reservation</p>
+          <h1 className="font-heading font-bold text-[42px] text-white mb-2 tracking-wide leading-tight">Complete Your <span className="text-primary">Booking</span></h1>
           <p className="text-muted-foreground text-base">Reserve your luxury vehicle in just a few steps.</p>
         </div>
 
@@ -260,7 +349,7 @@ export const BookingFlow: React.FC = () => {
                 <div key={step.id} className="relative flex flex-col items-center flex-1">
                   {/* Progress Line connecting to previous step */}
                   {index !== 0 && (
-                    <div className="absolute top-[10px] left-[-50%] right-[50%] h-[2px] bg-white/20 z-0">
+                    <div className="absolute top-[8px] left-[-50%] right-[50%] h-[1px] bg-white/10 z-0">
                       <div 
                         className={`h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(212,175,55,0.5)] ${
                           isCompleted || isCurrent ? 'w-full' : 'w-0'
@@ -271,12 +360,12 @@ export const BookingFlow: React.FC = () => {
 
                   {/* Dot */}
                   <div className={`relative z-10 rounded-full flex items-center justify-center transition-all duration-300
-                      ${isCompleted || (currentStep === 3 && step.id === 3) ? 'w-5 h-5 bg-primary text-black' : 
-                        isCurrent ? 'w-5 h-5 bg-primary shadow-[0_0_15px_rgba(212,175,55,0.6)]' : 
-                        'w-5 h-5 bg-[#0a0a0a] border-2 border-white/20'
+                      ${isCompleted || (currentStep === 3 && step.id === 3) ? 'w-[18px] h-[18px] bg-primary text-black' : 
+                        isCurrent ? 'w-[18px] h-[18px] bg-primary shadow-[0_0_15px_rgba(212,175,55,0.6)]' : 
+                        'w-4 h-4 bg-[#0a0a0a] border border-white/30'
                       }`}
                   >
-                    {(isCompleted || (currentStep === 3 && step.id === 3)) && <CheckCircle2 size={12} className="stroke-[3]" />}
+                    {(isCompleted || (currentStep === 3 && step.id === 3)) && <CheckCircle2 size={10} className="stroke-[3]" />}
                   </div>
                   
                   {/* Label */}
@@ -299,7 +388,7 @@ export const BookingFlow: React.FC = () => {
                 className="grid lg:grid-cols-[1fr_380px] gap-12 items-start pb-32"
               >
                 {/* Left Column: Form Cards */}
-                <div className="space-y-8">
+                <div className="space-y-10">
                   {/* Trip Details Card */}
                   <div className="glass-panel rounded-2xl p-6 md:p-8">
                     <h2 className="font-heading text-[30px] font-bold text-white mb-8 border-b border-white/5 pb-4">Trip Details</h2>
@@ -337,7 +426,7 @@ export const BookingFlow: React.FC = () => {
                             <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Pickup Date</label>
                             <Popover.Root open={isPickupOpen} onOpenChange={setIsPickupOpen}>
                               <Popover.Trigger asChild>
-                                <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center">
+                                <button className={`relative w-full text-left pl-12 h-14 bg-black/40 border ${dateError && !pickupDate ? 'border-[#d64545]/60 shadow-[0_0_15px_rgba(214,69,69,0.15)]' : 'border-white/10'} text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center`}>
                                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                   {pickupDate ? format(parseISO(pickupDate), 'PPP') : <span className="text-muted-foreground">Select date</span>}
                                 </button>
@@ -391,7 +480,7 @@ export const BookingFlow: React.FC = () => {
                               <label className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Return Date</label>
                               <Popover.Root open={isReturnOpen} onOpenChange={setIsReturnOpen}>
                                 <Popover.Trigger asChild>
-                                  <button className="relative w-full text-left pl-12 h-14 bg-black/40 border border-white/10 text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center">
+                                  <button className={`relative w-full text-left pl-12 h-14 bg-black/40 border ${dateError && !returnDate ? 'border-[#d64545]/60 shadow-[0_0_15px_rgba(214,69,69,0.15)]' : 'border-white/10'} text-[16px] text-white rounded-2xl hover:bg-white/5 focus:shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:border-primary transition-all flex items-center`}>
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                     {returnDate ? format(parseISO(returnDate), 'PPP') : <span className="text-muted-foreground">Select date</span>}
                                   </button>
@@ -453,7 +542,7 @@ export const BookingFlow: React.FC = () => {
                       <div className="grid md:grid-cols-2 gap-6">
                         <div 
                           onClick={() => setDriverRequired(true)}
-                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border ${driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
+                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border hover:-translate-y-[2px] hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] ${driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
                         >
                           {driverRequired && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={24} /></div>}
                           <h3 className="text-[16px] font-bold text-white mb-2">Chauffeur Driven</h3>
@@ -461,7 +550,7 @@ export const BookingFlow: React.FC = () => {
                         </div>
                         <div 
                           onClick={() => setDriverRequired(false)}
-                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border ${!driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
+                          className={`relative p-6 rounded-2xl cursor-pointer transition-all duration-300 border hover:-translate-y-[2px] hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] ${!driverRequired ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'border-white/10 hover:border-white/30 bg-black/40'}`}
                         >
                           {!driverRequired && <div className="absolute top-4 right-4 text-primary"><CheckCircle2 size={24} /></div>}
                           <h3 className="text-[16px] font-bold text-white mb-2">Self Drive</h3>
@@ -483,14 +572,14 @@ export const BookingFlow: React.FC = () => {
                     <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0">
                       {selectedCar && (
                         <div className="mb-6">
-                          <div className="flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-xl p-4 h-32 md:h-40 mb-4">
-                            <img src={selectedCar.images?.[0] || getFallbackImage(selectedCar.brand, selectedCar.model)} alt={selectedCar.model} className="w-[180px] object-contain filter drop-shadow-2xl" />
+                          <div className="flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-xl p-8 h-36 md:h-44 mb-6">
+                            <img src={selectedCar.images?.[0] || getFallbackImage(selectedCar.brand, selectedCar.model)} alt={selectedCar.model} className="w-[200px] object-contain filter drop-shadow-2xl scale-110" />
                           </div>
                           
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <h4 className="font-heading font-bold text-2xl text-white">{selectedCar.brand} {selectedCar.model}</h4>
-                              <span className="inline-block px-2 py-1 mt-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded">Premium SUV</span>
+                              <span className="inline-block px-2 py-1 mt-1 bg-primary/10 text-primary text-[11px] font-medium tracking-wider rounded">Luxury SUV</span>
                             </div>
                             <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-white text-[13px] font-bold">
                               <span className="text-primary">★</span> 4.9
@@ -557,7 +646,7 @@ export const BookingFlow: React.FC = () => {
                         <ChevronLeft className="mr-1" size={18} /> Back
                       </Button>
                       <Button 
-                        className="group bg-primary text-black px-8 h-14 rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.25)] font-bold text-[16px] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] disabled:opacity-50"
+                        className="group bg-primary text-black px-8 h-14 rounded-[20px] shadow-[0_0_20px_rgba(212,175,55,0.25)] font-bold text-[16px] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] disabled:opacity-50"
                         onClick={nextStep}
                         disabled={loadingPreview}
                       >

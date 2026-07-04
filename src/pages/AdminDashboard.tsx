@@ -1105,7 +1105,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-[#050505] flex flex-col md:flex-row overflow-hidden font-sans relative">
+    <div className="h-[100dvh] w-full bg-[#050505] flex flex-col md:flex-row overflow-hidden font-sans relative">
       
       {/* Mobile Top Navbar */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 bg-[#090909] border-b border-white/5 z-40 shrink-0">
@@ -1181,7 +1181,7 @@ export const AdminDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-[calc(100vh-73px)] md:h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-[calc(100vh-73px)] md:h-[100dvh] overflow-hidden">
         
         {/* Top Header - Desktop Only */}
         <header className="hidden md:flex h-16 bg-[#090909] border-b border-white/5 items-center justify-between px-8 shrink-0">

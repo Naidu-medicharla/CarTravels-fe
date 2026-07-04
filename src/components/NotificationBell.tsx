@@ -125,7 +125,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute right-0 top-12 w-[360px] max-h-[520px] bg-[#0B0B0C] border border-white/10 rounded-xl shadow-2xl z-[200] flex flex-col overflow-hidden"
+            className="absolute right-0 top-12 w-[calc(100vw-32px)] max-w-[360px] max-h-[520px] bg-[#0B0B0C] border border-white/10 rounded-xl shadow-2xl z-[200] flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0">

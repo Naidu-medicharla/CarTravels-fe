@@ -66,7 +66,7 @@ export const About: React.FC = () => {
   }, [testimonials.length]);
 
   return (
-    <div className="bg-[#050505] min-h-screen font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
+    <div className="bg-[#050505] min-h-[100dvh] font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
 
       {/* SECTION 1: HERO (Cinematic Opening) */}
       <section className="relative h-[92vh] w-full flex items-center overflow-hidden">

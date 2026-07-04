@@ -77,10 +77,10 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#090909] min-h-screen font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
+    <div className="bg-[#090909] min-h-[100dvh] font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
       
       {/* 1. HERO SECTION */}
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      <section className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden">
         <motion.div
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}

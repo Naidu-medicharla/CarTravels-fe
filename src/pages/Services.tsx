@@ -194,7 +194,7 @@ export const Services: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen relative overflow-hidden font-sans pt-[72px] lg:pt-[140px]">
+    <div className="bg-[#050505] min-h-[100dvh] relative overflow-hidden font-sans pt-[72px] lg:pt-[140px]">
       
       {/* --- CINEMATIC BACKGROUND --- */}
       <AnimatePresence mode="wait">

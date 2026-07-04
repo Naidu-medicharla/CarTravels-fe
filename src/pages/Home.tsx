@@ -35,7 +35,7 @@ export const Home: React.FC = () => {
   ];
 
   return (
-    <div className="bg-background min-h-screen font-sans">
+    <div className="bg-background min-h-[100dvh] font-sans">
       {/* Hero Section */}
       <section className="relative min-h-[100svh] flex items-center pt-20 md:pt-24 pb-12 overflow-hidden">
         {/* Cinematic Background Image & Gradient */}
@@ -163,7 +163,7 @@ export const Home: React.FC = () => {
         {/* Content Layers (scrolling normally) */}
         <div className="relative z-10">
           {/* The Luxury Difference Content */}
-          <div className="w-full min-h-[60vh] md:min-h-screen flex items-center justify-center py-20 md:py-32">
+          <div className="w-full min-h-[60vh] md:min-h-[100dvh] flex items-center justify-center py-20 md:py-32">
             <div className="container px-6 md:px-8 text-center max-w-4xl mx-auto mt-12 md:mt-0">
               <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1 }}>
                 <h2 className="font-heading font-medium text-4xl md:text-6xl text-white mb-6 md:mb-8 drop-shadow-lg">The <span className="text-primary">Luxury Difference</span></h2>
@@ -178,7 +178,7 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Booking Journey Timeline Content - Minimal Editorial Luxury */}
-          <div className="w-full min-h-screen flex items-center justify-center py-24 md:py-40">
+          <div className="w-full min-h-[100dvh] flex items-center justify-center py-24 md:py-40">
             <div className="container px-4 md:px-8 w-full max-w-4xl mx-auto flex flex-col items-center">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20 md:mb-32">
                 <h2 className="font-heading font-medium text-4xl md:text-5xl lg:text-[64px] text-[#F5F5F5] tracking-tight drop-shadow-lg leading-tight mx-auto max-w-none">Your <span className="text-[#C9A227]">Journey</span> Starts Here</h2>
@@ -257,7 +257,7 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Large Testimonial Showcase Content */}
-          <div className="w-full min-h-[60vh] md:min-h-screen flex items-center justify-center py-20 md:py-32">
+          <div className="w-full min-h-[60vh] md:min-h-[100dvh] flex items-center justify-center py-20 md:py-32">
             <div className="container px-6 max-w-5xl text-center">
               <div className="text-primary text-8xl font-heading mb-4 opacity-60 h-16 leading-none">"</div>
               <AnimatePresence mode="wait">
