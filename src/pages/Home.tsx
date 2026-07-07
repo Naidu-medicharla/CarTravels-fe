@@ -159,7 +159,7 @@ export const Home: React.FC = () => {
             playsInline
             className="w-full h-full object-cover object-top filter brightness-[0.20] scale-105"
           >
-            <source src="/luxury.mp4" type="video/mp4" />
+            <source src="/luxury.mp4?v=1" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Subtle gradient overlay to blend edges if needed */}

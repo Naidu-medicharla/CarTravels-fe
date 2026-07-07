@@ -8,6 +8,7 @@ import { api } from '../lib/api';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import carLottie from '../assets/Car moving.lottie?url';
 import loginLightBg from '../assets/login_light.png';
+import loginDarkBg from '../assets/login_dark.png';
 import { useTheme } from '../context/ThemeContext';
 import styles from './Login.module.css';
 
@@ -103,28 +104,30 @@ export const Login: React.FC = () => {
 
   return (
     <div 
-      className={`${styles.page} ${!isDark ? 'flex-col items-center pt-24 justify-start !bg-white' : ''}`}
+      className={`${styles.page} ${
+        !isDark 
+          ? 'flex-col items-center pt-24 justify-start !bg-white' 
+          : 'flex-col lg:flex-row items-center lg:items-stretch pt-24 lg:pt-0 justify-start lg:justify-center'
+      }`}
       style={!isDark ? { backgroundColor: '#ffffff' } : {}}
     >
       
-      {/* Light Mode Specific Image */}
-      {!isDark && (
-        <motion.div 
-          initial={false}
-          animate={{ y: isRegistering ? '-15vh' : 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute -top-[1px] left-0 w-full h-[65vh] z-0 pointer-events-none"
-        >
-          <img src={loginLightBg} alt="Login Banner" className="w-full h-full object-cover object-top" />
-          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent" />
-        </motion.div>
-      )}
+      {/* Top Image (Always visible in Light Mode, Mobile-only in Dark Mode) */}
+      <motion.div 
+        initial={false}
+        animate={{ y: isRegistering ? '-15vh' : 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={`absolute -top-[1px] left-0 w-full h-[65vh] z-0 pointer-events-none ${isDark ? 'block lg:hidden' : 'block'}`}
+      >
+        <img src={isDark ? loginDarkBg : loginLightBg} alt="Login Banner" className="w-full h-full object-cover object-top" />
+        <div className={`absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t ${isDark ? 'from-background' : 'from-white'} to-transparent`} />
+      </motion.div>
       
-      {/* Visuals / Animation (Only for Dark Mode Split Layout) */}
+      {/* Visuals / Animation (Only for Dark Mode Split Layout - Desktop) */}
       {isDark && (
-        <div className={styles.leftPane}>
+        <div className={`${styles.leftPane} hidden lg:flex`}>
           {/* The beautiful generated illustration */}
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/images/auth_car_illustration.png)' }} />
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${loginDarkBg})` }} />
           
           {/* Subtle overlay gradient to ensure text readability if needed */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -156,7 +159,13 @@ export const Login: React.FC = () => {
       )}
 
       {/* Form Area */}
-      <div className={`${styles.rightPane} ${!isDark ? 'w-full !flex-none justify-end pb-12 pt-12 bg-transparent z-10 relative mt-auto' : ''}`}>
+      <div 
+        className={`${styles.rightPane} ${
+          !isDark 
+            ? 'w-full !flex-none justify-end pb-12 pt-12 bg-transparent z-10 relative mt-auto' 
+            : 'w-full lg:w-auto !flex-none lg:!flex-[1] justify-end lg:justify-center pb-12 lg:pb-0 pt-12 lg:pt-0 bg-transparent z-10 relative mt-auto lg:mt-0'
+        }`}
+      >
         <div className={`${styles.formContainer} ${!isDark ? 'mx-auto w-full max-w-xs px-2' : ''}`}>
           
           <motion.div 

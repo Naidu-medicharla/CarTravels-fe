@@ -169,13 +169,16 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Toggle */}
-          <button className="lg:hidden text-white p-1 hover:text-[#D4AF37] transition-colors" onClick={() => setMobileMenuOpen(true)}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="8" x2="20" y2="8"></line>
-              <line x1="4" y1="16" x2="20" y2="16"></line>
-            </svg>
-          </button>
+          {/* Mobile Actions */}
+          <div className="lg:hidden flex items-center gap-3">
+            <ThemeToggle />
+            <button className="text-white p-1 hover:text-[#D4AF37] transition-colors" onClick={() => setMobileMenuOpen(true)}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="8" x2="20" y2="8"></line>
+                <line x1="4" y1="16" x2="20" y2="16"></line>
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 
