@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, ArrowRight, User, Phone, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, Phone, Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
 import { useToast } from '../components/Feedback/ToastContext';
 import { api } from '../lib/api';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -103,14 +103,21 @@ export const Login: React.FC = () => {
 
   return (
     <div 
-      className={`${styles.page} ${!isDark ? 'flex-col items-center pt-24 justify-start' : ''}`}
+      className={`${styles.page} ${!isDark ? 'flex-col items-center pt-24 justify-start !bg-white' : ''}`}
+      style={!isDark ? { backgroundColor: '#ffffff' } : {}}
     >
       
       {/* Light Mode Specific Image */}
       {!isDark && (
-        <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+        <motion.div 
+          initial={false}
+          animate={{ y: isRegistering ? '-15vh' : 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute -top-[1px] left-0 w-full h-[65vh] z-0 pointer-events-none"
+        >
           <img src={loginLightBg} alt="Login Banner" className="w-full h-full object-cover object-top" />
-        </div>
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent" />
+        </motion.div>
       )}
       
       {/* Visuals / Animation (Only for Dark Mode Split Layout) */}

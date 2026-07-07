@@ -50,7 +50,7 @@ export const Contact: React.FC = () => {
     { q: "Do you travel outside the city?", a: "Yes, our outstation trips cover extensive routes with dedicated chauffeurs for multi-day itineraries." }
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };

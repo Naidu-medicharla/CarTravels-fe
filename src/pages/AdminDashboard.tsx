@@ -582,7 +582,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-end border-b border-border dark:border-white/5 pb-4">
               <span className="text-sm font-bold text-muted-foreground dark:text-white/50 uppercase tracking-widest">Booked</span>
-              <span className="text-2xl font-bold text-[#D4AF37]">{dashboardData.kpis.active_rentals}</span>
+              <span className="text-2xl font-bold text-[#D4AF37]">{(dashboardData.kpis as any).active_rentals ?? dashboardData.kpis.today_bookings}</span>
             </div>
             <div className="flex justify-between items-end">
               <span className="text-sm font-bold text-muted-foreground dark:text-white/50 uppercase tracking-widest">Maintenance</span>
