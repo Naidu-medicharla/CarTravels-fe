@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { AuthProvider } from './context/AuthContext';
 import { GlobalDataProvider, useGlobalData } from './context/GlobalDataContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { FleetSection } from './components/Sections/FleetSection';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -62,8 +63,9 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <GlobalDataProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <GlobalDataProvider>
         <AnimatePresence>
           {showSplash && (
             <motion.div
@@ -90,7 +92,7 @@ function App() {
         {!showSplash && (
           <Router>
             <ToastProvider>
-              <div className="flex flex-col min-h-[100dvh] bg-background">
+              <div className="flex flex-col min-h-[100dvh]" style={{ background: 'var(--color-bg-page)', color: 'var(--color-text-primary)' }}>
                 <ConditionalNavbar />
                 <ScrollToTop />
 
@@ -131,8 +133,9 @@ function App() {
             </ToastProvider>
           </Router>
         )}
-      </GlobalDataProvider>
-    </AuthProvider>
+        </GlobalDataProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

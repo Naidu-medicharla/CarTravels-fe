@@ -1,0 +1,96 @@
+/* ── Auth Page ──────────────────────────────────────────── */
+.page {
+  min-height: 100dvh;
+  background: var(--color-bg-page);
+  display: flex;
+  position: relative;
+}
+
+/* Split Layout containers */
+.leftPane {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .leftPane {
+    display: flex;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+.rightPane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* New Pill-Shaped Form inputs */
+.inputWrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px; /* Pill shape */
+  padding: 1rem 1.25rem 1rem 3.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:focus {
+  border-color: var(--color-gold);
+  background: var(--glass-bg);
+}
+
+/* Password reveal button */
+.revealBtn {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.revealBtn:hover {
+  color: var(--color-text-primary);
+}
+
+/* Loading overlay */
+.loadingOverlay {
+  background: color-mix(in srgb, var(--color-bg-page) 90%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

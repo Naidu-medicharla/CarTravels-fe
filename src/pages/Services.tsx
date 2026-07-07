@@ -4,10 +4,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import airportBg from '../assets/services/airport.png';
 import outstationBg from '../assets/services/outstation.png';
 import templeBg from '../assets/services/temple.png';
 import familyBg from '../assets/services/family.jpg';
+import styles from './Services.module.css';
 
 type SpecPosition = 'top-left' | 'top-right' | 'bottom-right' | 'center-right' | 'bottom-center';
 
@@ -126,6 +128,7 @@ export const Services: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn } = useAuth();
+  const { theme } = useTheme();
   const [activeExpIndex, setActiveExpIndex] = useState(0);
   const activeExp = EXPERIENCES[activeExpIndex];
 
@@ -180,7 +183,7 @@ export const Services: React.FC = () => {
           {starOrder}
         </div>
         
-        <h3 className="text-white font-bold text-xl tracking-wide leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{activeExp.vehicle}</h3>
+        <h3 className={`text-white font-bold text-xl tracking-wide leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${styles.heading}`}>{activeExp.vehicle}</h3>
         <span className="text-[#D4AF37] text-[10px] uppercase tracking-widest mb-4 block drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold">{activeExp.vehicleType}</span>
         
         <div className={`w-10 h-[2px] bg-white mb-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${alignLeft ? 'ml-0' : 'ml-auto'}`} />
@@ -194,7 +197,7 @@ export const Services: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-[100dvh] relative overflow-hidden font-sans pt-[72px] lg:pt-[140px]">
+    <div className="relative overflow-hidden font-sans pt-[72px] lg:pt-[140px]">
       
       {/* --- CINEMATIC BACKGROUND --- */}
       <AnimatePresence mode="wait">
@@ -210,36 +213,40 @@ export const Services: React.FC = () => {
             className="absolute inset-0 bg-cover bg-center transition-all duration-700"
             style={{ 
               backgroundImage: `url(${activeExp.bgImage})`,
-              filter: activeExp.imageFilter || 'contrast(110%) brightness(90%)'
+              filter: theme === 'light' ? 'none' : (activeExp.imageFilter || 'contrast(110%) brightness(90%)')
             }}
           />
           
-          {activeExp.customOverlay}
+          {theme === 'dark' && activeExp.customOverlay}
 
           {activeExp.id === 'airport' ? (
             <>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-transparent to-transparent opacity-90" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0b]/80 via-transparent to-transparent opacity-80" />
+              {theme === 'dark' && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-transparent to-transparent opacity-90" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0b]/80 via-transparent to-transparent opacity-80" />
+                </>
+              )}
             </>
           ) : (
             <>
               {/* Strict Left Gradient */}
               <div 
                 className="absolute inset-0 w-full"
-                style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 40%, transparent 100%)' }}
+                style={{ background: theme === 'light' ? 'none' : 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 40%, transparent 100%)' }}
               />
               
               {/* Mobile Bottom Gradient to ensure text readability */}
               <div 
                 className="absolute inset-0 w-full lg:hidden"
-                style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
+                style={{ background: theme === 'light' ? 'none' : 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
               />
             </>
           )}
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 min-h-[calc(100vh-140px)] flex flex-col pt-4 md:pt-8 pb-32 lg:pb-12">
+      <section className="relative z-10 min-h-[calc(100vh-140px)] flex flex-col pt-4 md:pt-8 pb-32 lg:pb-12">
         
         {/* --- BOTTOM SLIDE INDICATORS --- */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[50] flex items-center gap-3">
@@ -305,7 +312,7 @@ export const Services: React.FC = () => {
                 <motion.div>
                   <Button 
                     onClick={() => navigate('/cars')}
-                    className="bg-transparent border border-white/20 text-white hover:bg-white hover:text-black font-medium uppercase tracking-widest text-xs h-12 rounded-none flex items-center gap-4 transition-all duration-500 group px-6 w-fit mb-10 lg:mb-0"
+                    className={`bg-transparent border border-white/20 text-white hover:bg-white hover:text-black font-medium uppercase tracking-widest text-xs h-12 rounded-none flex items-center gap-4 transition-all duration-500 group px-6 w-fit mb-10 lg:mb-0 ${styles.actionBtn}`}
                   >
                     <span>Reserve Journey</span>
                     <ArrowRight size={16} className="transform group-hover:translate-x-2 transition-transform" />
@@ -336,7 +343,7 @@ export const Services: React.FC = () => {
           </AnimatePresence>
 
         </div>
-      </div>
+      </section>
       
       {/* Global Style to hide scrollbar on webkit for the nav tabs */}
       <style>{`

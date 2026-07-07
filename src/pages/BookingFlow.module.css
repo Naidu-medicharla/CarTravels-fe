@@ -1,0 +1,108 @@
+/* ── BookingFlow Page ────────────────────────────────────── */
+
+.page {
+  min-height: 100dvh;
+  background: radial-gradient(circle at top, var(--color-bg-secondary), var(--color-bg-page));
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Toast notification */
+.toastSuccess {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-gold);
+  color: var(--color-text-primary);
+}
+
+.toastError {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-danger);
+  color: var(--color-text-primary);
+}
+
+/* Loading overlay */
+.loadingOverlay {
+  background: color-mix(in srgb, var(--color-bg-page) 95%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glow {
+  background: var(--color-gold-bg);
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+/* Progress Step */
+.stepCompleted {
+  background: var(--color-gold);
+  border: 1px solid var(--color-gold-border);
+  color: var(--color-bg-page);
+}
+
+.stepActive {
+  background: var(--color-gold-bg);
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
+}
+
+.stepPending {
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+}
+
+.stepLineCompleted {
+  background: var(--color-gold);
+}
+
+.stepLinePending {
+  background: var(--color-border-subtle);
+}
+
+/* Step Title */
+.stepTitleCompleted {
+  color: var(--color-text-primary);
+}
+.stepTitleActive {
+  color: var(--color-gold);
+}
+.stepTitlePending {
+  color: var(--color-text-muted);
+}
+
+/* Card */
+.formCard {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Form block */
+.formBlock {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* Summary Card */
+.summaryCard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* Action block */
+.actionBlock {
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+}

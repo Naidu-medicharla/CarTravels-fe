@@ -14,6 +14,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { DayPicker } from 'react-day-picker';
 import { format, parseISO, isSameDay } from 'date-fns';
 import 'react-day-picker/dist/style.css';
+import styles from './BookingFlow.module.css';
 
 const steps = [
   { id: 1, title: 'Trip Details', icon: MapPin },
@@ -210,7 +211,7 @@ export const BookingFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-28 pb-8 relative overflow-hidden flex flex-col items-center">
+    <div className={`pt-28 pb-8 ${styles.page}`}>
 
       {/* Toast Notification */}
       <AnimatePresence>
@@ -220,7 +221,7 @@ export const BookingFlow: React.FC = () => {
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -10, x: "-50%", transition: { duration: 0.25 } }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`fixed top-24 left-1/2 z-[100] flex items-center gap-3 px-5 h-12 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-md border border-white/5 w-auto max-w-[90vw] whitespace-nowrap ${toast.type === 'error' ? 'bg-[#141414]/92 border-l-[3px] border-l-[#d64545] text-white' : 'bg-[#141414]/92 border-l-[3px] border-l-[#D4AF37] text-white'}`}
+            className={`fixed top-24 left-1/2 z-[100] flex items-center gap-3 px-5 h-12 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-auto max-w-[90vw] whitespace-nowrap ${toast.type === 'error' ? styles.toastError : styles.toastSuccess}`}
           >
             {toast.type === 'error' ? <X size={16} className="text-white/60" /> : <CheckCircle2 size={16} className="text-[#D4AF37]" />}
             <span className="font-heading font-medium tracking-wide text-[13px] sm:text-sm text-white">{toast.message}</span>
@@ -235,11 +236,11 @@ export const BookingFlow: React.FC = () => {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/95 backdrop-blur-xl"
+            className={`fixed inset-0 z-50 flex items-center justify-center ${styles.loadingOverlay}`}
           >
             {/* Radial glow background */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[100px]"></div>
+              <div className={`w-[500px] h-[500px] ${styles.glow}`}></div>
             </div>
 
             <div className="relative flex flex-col items-center w-full max-w-md px-6 z-10">

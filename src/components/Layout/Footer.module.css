@@ -1,0 +1,81 @@
+/* ── Footer ──────────────────────────────────────────────── */
+.footer {
+  background: linear-gradient(to bottom, var(--color-bg-page), var(--color-bg-secondary));
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+  position: relative;
+  z-index: 10;
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.accordionWrap {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* On md+ screens, remove the accordion border */
+@media (min-width: 768px) {
+  .accordionWrap {
+    border-bottom: none;
+  }
+}
+
+.accordionTitle {
+  color: var(--color-text-primary);
+}
+
+.accordionChevron {
+  color: var(--color-text-muted);
+}
+
+/* Logo brand text */
+.brandName {
+  color: var(--color-text-primary);
+}
+
+/* Description text */
+.description {
+  color: var(--color-text-secondary);
+}
+
+/* Social icon button */
+.socialIcon {
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.socialIcon:hover {
+  background: var(--color-gold-bg);
+  color: var(--color-gold);
+  border-color: var(--color-gold-border);
+}
+
+/* Nav links */
+.link {
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--color-gold);
+}
+
+/* Bottom bar */
+.bottomBar {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* Column 1 separator on mobile */
+.col1 {
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) {
+  .col1 {
+    border-bottom: none;
+  }
+}

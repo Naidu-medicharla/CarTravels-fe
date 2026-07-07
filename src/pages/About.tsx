@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, UserCheck, CarFront, Navigation, Phone, ArrowRight } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 import bgImage from '@/assets/bg.png';
 import aboutBg from '@/assets/about_bg.jpg';
 import entireBg from '@/assets/entire_bg.jpg';
+import styles from './About.module.css';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -23,6 +25,7 @@ export const About: React.FC = () => {
   const navigate = useNavigate();
   const [hoveredFleet, setHoveredFleet] = useState<number | null>(null);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const { theme } = useTheme();
 
   // Scroll to top on mount
   useEffect(() => {
@@ -66,7 +69,7 @@ export const About: React.FC = () => {
   }, [testimonials.length]);
 
   return (
-    <div className="bg-[#050505] min-h-[100dvh] font-sans text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black">
+    <div className={`min-h-[100dvh] font-sans overflow-hidden selection:bg-[#D4AF37] selection:text-black ${styles.page}`}>
 
       {/* SECTION 1: HERO (Cinematic Opening) */}
       <section className="relative h-[92vh] w-full flex items-center overflow-hidden">
@@ -78,13 +81,13 @@ export const About: React.FC = () => {
           className="absolute inset-0 bg-cover bg-[position:center] bg-no-repeat"
           style={{
             backgroundImage: `url(${aboutBg})`,
-            filter: 'blur(0px)'
+            filter: theme === 'light' ? 'none' : 'blur(0px)'
           }}
         />
         {/* Left-side text legibility gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent w-full md:w-3/4 pointer-events-none" />
+        <div className={`absolute inset-0 w-full md:w-3/4 pointer-events-none ${styles.heroGradient}`} />
         {/* Bottom Fade Gradient to remove hard cut (shorter) */}
-        <div className="absolute inset-x-0 bottom-0 h-24 md:h-32 bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
+        <div className={`absolute inset-x-0 bottom-0 h-24 md:h-32 pointer-events-none ${styles.sectionBorder}`} style={{ background: 'linear-gradient(to top, var(--color-bg-page), transparent)' }} />
 
         {/* Subtle Gold Glow from Bottom-Right */}
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-[#D4AF37]/5 blur-[120px] pointer-events-none rounded-full" />
@@ -149,7 +152,7 @@ export const About: React.FC = () => {
               <h2 className="font-heading text-3xl md:text-5xl font-light leading-[1.3] text-white/90 mb-8">
                 For over a decade, Vibe Travels has delivered premium chauffeur experiences.
               </h2>
-              <p className="text-white/50 text-sm md:text-base leading-relaxed mb-6">
+              <p className={`text-base md:text-lg leading-relaxed font-light ${styles.bodyText}`}>
                 Across airports, weddings, corporate travel and exclusive events, we have built a reputation for uncompromising excellence.
               </p>
               <p className="text-white/80 font-serif italic text-lg md:text-xl">
@@ -242,7 +245,7 @@ export const About: React.FC = () => {
           className="absolute inset-0 bg-cover bg-center pointer-events-none"
           style={{
             backgroundImage: 'url("https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.1.0&q=100&w=2560&auto=format&fit=crop")',
-            filter: 'contrast(1.1) brightness(0.25) saturate(0)' // Monochromatic base
+            filter: theme === 'light' ? 'none' : 'contrast(1.1) brightness(0.25) saturate(0)' // Monochromatic base
           }}
         />
 
@@ -251,7 +254,7 @@ export const About: React.FC = () => {
           className="absolute inset-0 bg-cover bg-center pointer-events-none transition-opacity duration-1000"
           style={{
             backgroundImage: 'url("https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.1.0&q=100&w=2560&auto=format&fit=crop")',
-            filter: 'contrast(1.1) brightness(0.4)',
+            filter: theme === 'light' ? 'none' : 'contrast(1.1) brightness(0.4)',
             opacity: hoveredFleet !== null ? 1 : 0
           }}
         />
@@ -286,13 +289,13 @@ export const About: React.FC = () => {
       </section>
 
       {/* SECTION 7: JOURNEY TIMELINE */}
-      <section className="py-16 px-6 bg-[#050505] overflow-hidden border-t border-white/5">
+      <section className={`py-32 relative ${styles.page}`}>
         <div className="container mx-auto">
           <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] mb-20 text-center font-bold">The Vibe Journey</h3>
 
           <div className="relative max-w-5xl mx-auto px-4 md:px-0">
             {/* Animated background line */}
-            <div className="absolute top-[24px] left-0 right-0 h-[2px] bg-white/10" />
+            <div className={`absolute left-[7px] top-6 bottom-[-24px] w-[2px] ${styles.timelineConnector}`} />
 
             <motion.div
               initial={{ width: 0 }}
@@ -311,6 +314,7 @@ export const About: React.FC = () => {
                 { label: 'Enjoy Journey', icon: <Navigation size={20} /> }
               ].map((step, i) => (
                 <div key={i} className="flex flex-col items-center gap-6 bg-[#050505] px-2 md:px-6 relative group">
+                  <div className={`absolute left-0 top-1 w-[16px] h-[16px] rounded-full mt-1.5 ${styles.timelineDot}`} />
                   <motion.div
                     initial={{ scale: 0 }}
                     whileInView={{ scale: 1 }}
@@ -359,7 +363,7 @@ export const About: React.FC = () => {
       </section>
 
       {/* SECTION 9: TESTIMONIALS (Slider with Photos) */}
-      <section className="py-16 px-6 bg-[#0a0a0a] border-y border-white/5">
+      <section className={`py-32 ${styles.sectionAlt} ${styles.sectionBorder}`}>
         <div className="container mx-auto max-w-4xl text-center">
 
           <AnimatePresence mode="wait">
@@ -384,12 +388,7 @@ export const About: React.FC = () => {
               </h3>
 
               <div className="flex flex-col items-center gap-2">
-                <p className="text-sm tracking-wide text-white font-medium">
-                  {testimonials[activeTestimonial].author}
-                </p>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] font-bold">
-                  {testimonials[activeTestimonial].role}
-                </p>
+                <p className={`text-sm uppercase tracking-widest font-bold mb-4 ${styles.teamRole}`}>— {testimonials[activeTestimonial].author}, {testimonials[activeTestimonial].role}</p>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -410,7 +409,7 @@ export const About: React.FC = () => {
 
 
       {/* SECTION 11: CTA */}
-      <section className="pt-24 pb-48 px-6 bg-[#050505]">
+      <section className={`py-24 relative z-10 ${styles.sectionAlt}`}>
         <div className="container mx-auto text-center flex flex-col items-center">
           <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] mb-8 font-bold">Ready For Your Next Journey?</h3>
           <h2 className="font-heading text-4xl md:text-6xl font-light leading-tight mb-16 text-white/90">

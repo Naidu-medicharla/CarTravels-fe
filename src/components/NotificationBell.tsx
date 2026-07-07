@@ -124,8 +124,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             initial={{ opacity: 0, y: -8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute right-0 top-12 w-[calc(100vw-32px)] max-w-[360px] max-h-[520px] bg-[#0B0B0C] border border-white/10 rounded-xl shadow-2xl z-[200] flex flex-col overflow-hidden"
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute right-0 top-12 w-[calc(100vw-32px)] max-w-[380px] max-h-[80vh] sm:max-h-[520px] bg-[#080808]/85 backdrop-blur-[40px] border border-white/10 rounded-2xl shadow-[0_25px_65px_-10px_rgba(0,0,0,1)] z-[200] flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0">
@@ -157,11 +157,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             <div className="flex-1 overflow-y-auto">
               {notifications.length === 0 ? (
                 /* Empty state */
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                    <BellOff size={22} className="text-white/20" />
+                <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                  <div className="relative w-16 h-16 rounded-full bg-[#D4AF37]/5 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(212,175,55,0.05)] border border-[#D4AF37]/10">
+                    <BellOff size={24} className="text-[#D4AF37]/50" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D4AF37]/10 to-transparent blur-md -z-10" />
                   </div>
-                  <p className="text-white/40 text-sm">You're all caught up!</p>
+                  <h4 className="text-white font-bold text-lg mb-1 tracking-wide">All Caught Up</h4>
+                  <p className="text-white/40 text-xs">When you get notifications, they'll show up here.</p>
                 </div>
               ) : (
                 <ul>
@@ -211,8 +213,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
             {/* Footer hint */}
             {notifications.length > 0 && (
-              <div className="px-5 py-3 border-t border-white/5 shrink-0">
-                <p className="text-[10px] text-white/25 text-center">Click a notification to dismiss it</p>
+              <div className="px-5 py-3.5 border-t border-white/5 shrink-0 bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/30 text-center flex items-center justify-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/20" /> Click a notification to dismiss it
+                </p>
               </div>
             )}
           </motion.div>

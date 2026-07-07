@@ -1,40 +1,54 @@
+@import './styles/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Base theme colors - Modern European Luxury */
-    --background: 30 7% 5%; /* #0F0E0D */
-    --foreground: 42 27% 94%; /* #F4F1EA */
-
-    --card: 30 7% 7%; 
+    /* shadcn/ui compatibility — keeping these for component library */
+    --background: 30 7% 5%;
+    --foreground: 42 27% 94%;
+    --card: 30 7% 7%;
     --card-foreground: 42 27% 94%;
-
     --popover: 30 7% 7%;
     --popover-foreground: 42 27% 94%;
-
-    /* Matte Gold Accent: #D6B04A */
-    --primary: 44 65% 56%; 
+    --primary: 44 65% 56%;
     --primary-foreground: 0 0% 0%;
-
     --secondary: 30 5% 15%;
     --secondary-foreground: 42 27% 94%;
-
     --muted: 30 5% 15%;
-    --muted-foreground: 0 0% 77%; /* #C5C5C5 */
-
-    --accent: 356 67% 33%; /* Accent Red #8E1C23 */
+    --muted-foreground: 0 0% 77%;
+    --accent: 356 67% 33%;
     --accent-foreground: 42 27% 94%;
-
     --destructive: 356 67% 33%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 30 5% 15%; /* Subtle borders */
+    --border: 30 5% 15%;
     --input: 30 5% 15%;
-    --ring: 44 65% 56%; /* Gold focus ring */
-
+    --ring: 44 65% 56%;
     --radius: 0.5rem;
+  }
+
+  html.light {
+    --background: 40 25% 96%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 44 80% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 44 80% 42%;
   }
 }
 
@@ -46,27 +60,46 @@
     font-size: 80%;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+    @apply font-sans;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }
 }
 
 @layer utilities {
+  /* Glass panel — responds to theme automatically */
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
   }
 
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;             /* Chrome, Safari, Opera */
+    display: none;
+  }
+
+  /* Custom scrollbar for panels that show it */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
   }
 }
-
-

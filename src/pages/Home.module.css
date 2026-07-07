@@ -1,0 +1,111 @@
+/* ── Home Page ───────────────────────────────────────────── */
+
+/* Page root */
+.page {
+  background: var(--color-bg-page);
+  min-height: 100dvh;
+}
+
+/* Hero badge pill */
+.heroBadge {
+  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  color: var(--color-text-secondary);
+}
+
+/* Ghost button in hero */
+.heroGhostBtn {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: background 0.2s ease;
+}
+
+.heroGhostBtn:hover {
+  background: var(--color-bg-hover);
+}
+
+/* Hero separator */
+.heroSeparator {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Separator divider badge text */
+.separatorBadge {
+  color: var(--color-text-muted);
+}
+
+/* Bottom fade from hero into next section */
+.heroFadeBottom {
+  background: var(--hero-fade-bottom);
+}
+
+/* Hero text shadow */
+.heroTextShadow {
+  text-shadow: var(--hero-text-shadow);
+}
+
+/* Hero left gradient */
+.heroGradientOverlay {
+  background: var(--hero-gradient);
+}
+
+/* Hero Glass Panel around text - removed per user request */
+.heroGlassPanel {
+}
+
+/* Video section background */
+.videoSection {
+  background: var(--color-bg-page);
+}
+
+/* Top/bottom fades on video section */
+.videoFadeTop {
+  background: linear-gradient(to bottom, var(--color-bg-page), transparent);
+}
+
+.videoFadeBottom {
+  background: linear-gradient(to bottom, transparent, var(--color-bg-page));
+}
+
+/* Video content overlay */
+.videoOverlay {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-bg-page) 50%, transparent),
+    transparent,
+    color-mix(in srgb, var(--color-bg-page) 80%, transparent)
+  );
+}
+
+/* Timeline step icon circle */
+.timelineIcon {
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-gold-border);
+  color: var(--color-gold);
+}
+
+/* Timeline title */
+.timelineTitle {
+  color: var(--color-text-primary);
+}
+
+/* Timeline desc */
+.timelineDesc {
+  color: var(--color-text-secondary);
+}
+
+/* Testimonial text */
+.testimonialText {
+  color: var(--color-text-primary);
+}
+
+/* Testimonial dot inactive */
+.testimonialDotInactive {
+  background: var(--color-gold-bg);
+}
+.testimonialDotInactive:hover {
+  background: color-mix(in srgb, var(--color-gold) 50%, transparent);
+}

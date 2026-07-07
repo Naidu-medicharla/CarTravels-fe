@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Car, MapPin, Phone, Mail, ChevronDown, FileText, CarFront } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import styles from './Footer.module.css';
 
 const FacebookIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
@@ -20,13 +21,13 @@ const FooterAccordion = ({ title, children, defaultOpen = false }: { title: Reac
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-white/10 md:border-none md:pb-0">
-      <button 
+    <div className={styles.accordionWrap}>
+      <button
         className="w-full flex justify-between items-center py-4 md:py-0 md:mb-6"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="font-heading font-bold text-white text-left">{title}</h4>
-        <ChevronDown size={20} className={`md:hidden text-white/50 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <h4 className={`font-heading font-bold text-left ${styles.accordionTitle}`}>{title}</h4>
+        <ChevronDown size={20} className={`md:hidden transition-transform duration-300 ${styles.accordionChevron} ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {(isOpen || window.innerWidth >= 768) && (
@@ -48,29 +49,29 @@ const FooterAccordion = ({ title, children, defaultOpen = false }: { title: Reac
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-b from-[#0A0A0A] to-[#121212] text-muted-foreground pt-16 md:pt-20 pb-8 border-t border-white/5 relative z-10">
+    <footer className={styles.footer}>
       <div className="container px-6 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-0 md:gap-12 mb-12 md:mb-16">
           {/* Column 1: Logo & Desc */}
-          <div className="lg:col-span-2 mb-8 md:mb-0 pb-8 md:pb-0 border-b border-white/10 md:border-none">
+          <div className={`lg:col-span-2 mb-8 md:mb-0 pb-8 md:pb-0 ${styles.col1}`}>
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition group mb-6">
               <Car size={38} className="text-primary group-hover:scale-105 transition-transform" />
               <div className="flex items-baseline gap-1.5 ml-1 pt-1">
                 <span className="font-heading font-bold text-4xl text-primary leading-none tracking-wide">Vibe</span>
-                <span className="font-heading font-normal text-3xl text-white tracking-widest leading-none">Travels</span>
+                <span className={`font-heading font-normal text-3xl tracking-widest leading-none ${styles.brandName}`}>Travels</span>
               </div>
             </Link>
-            <p className="text-sm leading-relaxed mb-8 max-w-sm">
+            <p className={`text-sm leading-relaxed mb-8 max-w-sm ${styles.description}`}>
               Your Journey, Our Responsibility. Experience the pinnacle of automotive luxury with our premium fleet and professional chauffeurs across the state.
             </p>
             <div className="flex gap-4">
               {[FacebookIcon, TwitterIcon, InstagramIcon, LinkedinIcon].map((Icon, i) => (
-                <motion.a 
+                <motion.a
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  key={i} 
-                  href="#" 
-                  className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors text-white"
+                  key={i}
+                  href="#"
+                  className={`w-12 h-12 rounded-full flex items-center justify-center ${styles.socialIcon}`}
                 >
                   <Icon />
                 </motion.a>
@@ -80,7 +81,7 @@ export const Footer: React.FC = () => {
 
           {/* Column 2: Quick Links */}
           <div className="lg:col-span-1">
-            <FooterAccordion 
+            <FooterAccordion
               title={
                 <span className="flex items-center gap-2">
                   <FileText size={18} className="text-primary" /> Quick Links
@@ -88,17 +89,17 @@ export const Footer: React.FC = () => {
               }
             >
               <ul className="space-y-4 text-sm">
-                <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                <li><Link to="/cars" className="hover:text-primary transition-colors">Our Fleet</Link></li>
-                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-                <li><Link to="/faq" className="hover:text-primary transition-colors">FAQs</Link></li>
+                <li><Link to="/about" className={styles.link}>About Us</Link></li>
+                <li><Link to="/cars" className={styles.link}>Our Fleet</Link></li>
+                <li><Link to="/contact" className={styles.link}>Contact Us</Link></li>
+                <li><Link to="/faq" className={styles.link}>FAQs</Link></li>
               </ul>
             </FooterAccordion>
           </div>
 
           {/* Column 3: Services */}
           <div className="lg:col-span-1">
-            <FooterAccordion 
+            <FooterAccordion
               title={
                 <span className="flex items-center gap-2">
                   <CarFront size={18} className="text-primary" /> Services
@@ -106,18 +107,18 @@ export const Footer: React.FC = () => {
               }
             >
               <ul className="space-y-4 text-sm">
-                <li><Link to="/services#airport" className="hover:text-primary transition-colors">Airport Transfers</Link></li>
-                <li><Link to="/services#local" className="hover:text-primary transition-colors">Corporate Travel</Link></li>
-                <li><Link to="/services#wedding" className="hover:text-primary transition-colors">Wedding Chauffeurs</Link></li>
-                <li><Link to="/services#outstation" className="hover:text-primary transition-colors">Outstation Trips</Link></li>
-                <li><Link to="/services#temple" className="hover:text-primary transition-colors">Temple Visits</Link></li>
+                <li><Link to="/services#airport" className={styles.link}>Airport Transfers</Link></li>
+                <li><Link to="/services#local" className={styles.link}>Corporate Travel</Link></li>
+                <li><Link to="/services#wedding" className={styles.link}>Wedding Chauffeurs</Link></li>
+                <li><Link to="/services#outstation" className={styles.link}>Outstation Trips</Link></li>
+                <li><Link to="/services#temple" className={styles.link}>Temple Visits</Link></li>
               </ul>
             </FooterAccordion>
           </div>
 
           {/* Column 4: Contact */}
           <div className="lg:col-span-1">
-            <FooterAccordion 
+            <FooterAccordion
               title={
                 <span className="flex items-center gap-2">
                   <Phone size={18} className="text-primary" /> Contact
@@ -127,15 +128,15 @@ export const Footer: React.FC = () => {
               <ul className="space-y-4 text-sm">
                 <li className="flex items-center gap-3">
                   <MapPin size={18} className="text-primary shrink-0" />
-                  <span>Hyderabad</span>
+                  <span className={styles.link}>Hyderabad</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone size={18} className="text-primary shrink-0" />
-                  <span>+91 98765 43210</span>
+                  <span className={styles.link}>+91 98765 43210</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail size={18} className="text-primary shrink-0" />
-                  <span>concierge@vibetravels.com</span>
+                  <span className={styles.link}>concierge@vibetravels.com</span>
                 </li>
               </ul>
             </FooterAccordion>
@@ -143,13 +144,13 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-xs text-center md:text-left gap-4 md:gap-0">
+        <div className={`flex flex-col md:flex-row justify-between items-center pt-8 text-xs text-center md:text-left gap-4 md:gap-0 ${styles.bottomBar}`}>
           <p>&copy; {new Date().getFullYear()} Vibe Travels. All rights reserved.</p>
           <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            <Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link>
-            <Link to="/cancellation" className="hover:text-primary transition-colors">Cancellation Policy</Link>
+            <Link to="/privacy" className={styles.link}>Privacy Policy</Link>
+            <Link to="/terms" className={styles.link}>Terms</Link>
+            <Link to="/refund" className={styles.link}>Refund Policy</Link>
+            <Link to="/cancellation" className={styles.link}>Cancellation Policy</Link>
           </div>
         </div>
       </div>

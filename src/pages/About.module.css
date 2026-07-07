@@ -1,0 +1,69 @@
+/* ── About Page ──────────────────────────────────────────── */
+
+.page {
+  background: var(--color-bg-page);
+}
+
+.sectionAlt {
+  background: var(--color-bg-secondary);
+}
+
+.statCard {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.teamCard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teamCard:hover {
+  border-color: var(--color-gold-border);
+  box-shadow: var(--shadow-gold);
+}
+
+.teamName {
+  color: var(--color-text-primary);
+}
+
+.teamRole {
+  color: var(--color-text-muted);
+}
+
+.divider {
+  background: var(--color-border);
+}
+
+.valuePill {
+  background: var(--color-gold-bg);
+  border: 1px solid var(--color-gold-border);
+  color: var(--color-gold);
+}
+
+.timelineConnector {
+  background: var(--color-border);
+}
+
+.timelineDot {
+  background: var(--color-gold);
+  box-shadow: 0 0 8px var(--color-gold-glow);
+}
+
+.bodyText {
+  color: var(--color-text-secondary);
+}
+
+.heroGradient {
+  background: linear-gradient(to right, 
+    color-mix(in srgb, var(--color-bg-page) 85%, transparent),
+    transparent
+  );
+}
+
+.sectionBorder {
+  border-top: 1px solid var(--color-border-subtle);
+}

@@ -453,19 +453,7 @@ export const CustomerProfile: React.FC = () => {
           <div className="lg:col-span-1 space-y-6">
             <Card className="glass-panel p-6 text-center border-white/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full -z-10" />
-              {/* Bell in desktop sidebar */}
-              <div className="absolute top-4 right-4">
-                <NotificationBell
-                  unreadCount={notifs.unreadCount}
-                  notifications={notifs.notifications}
-                  panelOpen={notifs.panelOpen}
-                  onOpen={notifs.openPanel}
-                  onClose={notifs.closePanel}
-                  onAction={handleUserNotificationAction}
-                  onMarkAllRead={notifs.markAllRead}
-                />
-              </div>
-              <div className="w-24 h-24 rounded-full bg-black flex items-center justify-center mx-auto mb-4 border border-primary/30 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
+              <div className="w-24 h-24 rounded-full bg-black flex items-center justify-center mx-auto mb-4 border border-primary/30 shadow-[0_0_8px_rgba(212,175,55,0.15)] mt-4">
                 <User size={40} className="text-primary" />
               </div>
               <h3 className="font-heading font-bold text-xl text-white mb-1">{user?.name || 'Customer'}</h3>
@@ -505,8 +493,6 @@ export const CustomerProfile: React.FC = () => {
               {[
                 { label: 'Profile Details', icon: User, hash: '#profile' },
                 { label: 'My Bookings', display: 'Trips', icon: History, hash: '#bookings' },
-                { label: 'Saved Cards', icon: CreditCard, hash: '#payments' },
-                { label: 'Addresses', icon: MapPin, hash: '#addresses' },
               ].map((item, i) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.label;
@@ -517,8 +503,26 @@ export const CustomerProfile: React.FC = () => {
                 );
               })}
               <button 
+                onClick={() => setIsTrustOpen(true)}
+                className="flex items-center gap-4 px-6 py-4 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-white transition-colors border-l-2 border-transparent border-t border-white/5"
+              >
+                <Shield size={18} /> Trust & Safety
+              </button>
+              <button 
+                onClick={() => setIsSupportOpen(true)}
+                className="flex items-center gap-4 px-6 py-4 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-white transition-colors border-l-2 border-transparent border-t border-white/5"
+              >
+                <HelpCircle size={18} /> Support
+              </button>
+              <button 
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex items-center gap-4 px-6 py-4 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-white transition-colors border-l-2 border-transparent mt-auto border-t border-white/5"
+              >
+                <Settings size={18} /> Settings
+              </button>
+              <button 
                 onClick={handleLogout}
-                className="flex items-center gap-4 px-6 py-4 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors border-l-2 border-transparent mt-auto border-t border-white/5"
+                className="flex items-center gap-4 px-6 py-4 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors border-l-2 border-transparent border-t border-white/5"
               >
                 <LogOut size={18} /> Sign Out
               </button>
@@ -678,12 +682,34 @@ export const CustomerProfile: React.FC = () => {
 
             {activeTab === 'My Bookings' && (
               <div className="glass-panel p-8 rounded-2xl border-white/5 flex flex-col min-h-[500px]">
-                <div className="mb-6 border-b border-white/5 pb-4 flex justify-between items-center">
+                <div className="mb-6 border-b border-white/5 pb-4 flex justify-between items-end">
                   <div>
-                    <h2 className="font-heading font-bold text-2xl text-white">Trips</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{profile?.all_bookings?.length || 0} Confirmed Trips</p>
+                    <h2 className="font-heading font-bold text-3xl text-white">Trips</h2>
+                    <p className="text-sm text-[#D4AF37] font-semibold mt-1">{profile?.all_bookings?.length || 0} Luxury Journeys</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">₹{profile?.total_spend?.toLocaleString() ?? 0} Total Spent</p>
+                </div>
+
+                <div className="mb-8 flex items-center justify-between gap-4">
+                  <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+                    <Input placeholder="Search by Vehicle or Booking ID..." className="pl-10 pr-10 bg-white/[0.02] border-white/10 text-sm h-11 rounded-xl focus:border-[#D4AF37]/50 transition-colors" />
+                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
+                      <SlidersHorizontal size={18} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button className="px-5 py-2 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-bold border border-[#D4AF37]/20 transition-colors">All</button>
+                    <button className="px-5 py-2 rounded-full bg-white/5 text-white/60 hover:text-white text-sm font-bold border border-white/5 hover:border-white/10 transition-colors">Upcoming</button>
+                    <button className="px-5 py-2 rounded-full bg-white/5 text-white/60 hover:text-white text-sm font-bold border border-white/5 hover:border-white/10 transition-colors">Completed</button>
+                    <button className="px-5 py-2 rounded-full bg-white/5 text-white/60 hover:text-white text-sm font-bold border border-white/5 hover:border-white/10 transition-colors">Cancelled</button>
+                    <div className="w-px h-6 bg-white/10 mx-2" />
+                    <button className="px-4 py-2 rounded-full bg-white/5 text-white/60 hover:text-white border border-white/5 transition-colors flex items-center gap-2">
+                      <Calendar size={14} /> <span className="text-xs uppercase tracking-widest font-bold">Date</span>
+                    </button>
                   </div>
                 </div>
+
                 <div className="space-y-4">
                   {profile?.all_bookings?.length ? profile.all_bookings.slice(0, visibleTrips).map((booking, idx) => (
                     <div key={idx} className="bg-black/40 rounded-xl border border-white/10 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:border-primary/30 transition-colors">
@@ -698,7 +724,10 @@ export const CustomerProfile: React.FC = () => {
                           <h4 className="font-bold text-white text-xl mb-2">{booking.car_name}</h4>
                           <div className="flex items-center gap-4 text-xs text-white/60 font-medium">
                             <span className="flex items-center gap-1.5">{booking.start_date} {booking.end_date ? `to ${booking.end_date}` : ''}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                            <span>Hyderabad Airport</span>
                           </div>
+                          <span className="text-xs text-white/50 font-medium block mt-3">Driver: Rahul Sharma</span>
                         </div>
                       </div>
                       <div className="text-right mt-4 md:mt-0 flex flex-col justify-between items-end h-full">
@@ -725,8 +754,8 @@ export const CustomerProfile: React.FC = () => {
                         </div>
                         
                         {!booking.is_trip_completed && booking.status !== 'CANCELLED' && (
-                          <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-8 text-xs px-6 rounded-full">
-                            Manage
+                          <Button onClick={() => { setSelectedBooking(booking); setViewingDetails(false); }} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 hover:text-white transition-colors h-9 text-xs px-6 rounded-full flex items-center gap-1.5">
+                            View Booking <ChevronRight size={14} />
                           </Button>
                         )}
                         {booking.is_trip_completed && (
@@ -737,14 +766,16 @@ export const CustomerProfile: React.FC = () => {
                       </div>
                     </div>
                   )) : (
-                    <div className="text-center text-muted-foreground py-16 flex flex-col items-center justify-center">
-                      <History size={48} className="mb-4 text-white/10" />
-                      <p>You have no booking history.</p>
+                    <div className="text-center py-20 flex flex-col items-center justify-center">
+                      <Car size={56} className="mb-6 text-white/10" />
+                      <h4 className="text-white text-xl font-bold mb-2">No journeys yet.</h4>
+                      <p className="text-sm text-muted-foreground mb-8">Reserve your first luxury ride and experience the Vibe Travels difference.</p>
+                      <Button onClick={() => navigate('/')} className="bg-primary text-black h-12 text-sm font-bold rounded-full px-10 shadow-[0_0_20px_rgba(212,175,55,0.3)]">Book Now</Button>
                     </div>
                   )}
                   {profile?.all_bookings && visibleTrips < profile.all_bookings.length && (
-                    <div className="flex justify-center mt-6">
-                      <Button onClick={() => setVisibleTrips(prev => prev + 5)} variant="outline" className="border-white/10 text-white hover:bg-white/10 rounded-full h-10 px-8">
+                    <div className="flex justify-center mt-10">
+                      <Button onClick={() => setVisibleTrips(prev => prev + 5)} variant="outline" className="border-white/10 text-white hover:bg-white/10 rounded-full h-11 px-10 font-bold transition-all hover:border-[#D4AF37]/50">
                         Load More Trips
                       </Button>
                     </div>
@@ -913,7 +944,7 @@ export const CustomerProfile: React.FC = () => {
             <motion.div
               initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
               transition={{type:'spring',damping:28,stiffness:260}}
-              className="fixed bottom-0 inset-x-0 z-[801] bg-[#0D0D0F] border-t border-white/10 rounded-t-3xl p-6 pb-10 shadow-2xl"
+              className="fixed bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 inset-x-0 md:mx-auto z-[801] w-full md:max-w-md bg-[#0D0D0F] border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 shadow-2xl"
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-6" />
               <div className="flex items-center justify-between mb-6">
@@ -958,7 +989,7 @@ export const CustomerProfile: React.FC = () => {
             <motion.div
               initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
               transition={{type:'spring',damping:28,stiffness:260}}
-              className="fixed bottom-0 inset-x-0 z-[801] bg-[#0D0D0F] border-t border-white/10 rounded-t-3xl p-6 pb-10 shadow-2xl"
+              className="fixed bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 inset-x-0 md:mx-auto z-[801] w-full md:max-w-md bg-[#0D0D0F] border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 shadow-2xl"
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-6" />
               <div className="flex items-center justify-between mb-5">
@@ -1004,7 +1035,7 @@ export const CustomerProfile: React.FC = () => {
             <motion.div
               initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
               transition={{type:'spring',damping:28,stiffness:260}}
-              className="fixed bottom-0 inset-x-0 z-[801] bg-[#0D0D0F] border-t border-white/10 rounded-t-3xl pb-10 shadow-2xl max-h-[85vh] overflow-y-auto scrollbar-hide"
+              className="fixed bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 inset-x-0 md:mx-auto z-[801] w-full md:max-w-lg bg-[#0D0D0F] border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl pb-10 md:pb-6 shadow-2xl max-h-[85vh] overflow-y-auto scrollbar-hide"
             >
               <div className="sticky top-0 bg-[#0D0D0F] px-6 pt-6 pb-4 z-10">
                 <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />

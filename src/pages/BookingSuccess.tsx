@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { InvoiceTemplate } from '@/components/InvoiceTemplate';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import styles from './BookingSuccess.module.css';
 
 export const BookingSuccess: React.FC = () => {
   const { bookingId } = useParams();
@@ -58,10 +59,10 @@ export const BookingSuccess: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#181818,#0b0b0b)] pt-32 pb-8 relative overflow-hidden flex flex-col items-center">
+    <div className={`pt-32 pb-8 ${styles.page}`}>
       {/* Very faint radial gold glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        <div className="w-[800px] h-[800px] bg-[#D4AF37]/5 rounded-full blur-[120px]"></div>
+        <div className={styles.glow} />
       </div>
 
       <div className="container w-full max-w-[1120px] px-4 md:px-8 pt-8 relative z-10">
@@ -69,7 +70,7 @@ export const BookingSuccess: React.FC = () => {
           initial={{ opacity: 0, y: 30 }} 
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-          className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:p-10 pt-10 md:pt-14 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-2xl mx-auto"
+          className={`rounded-2xl p-6 md:p-10 pt-10 md:pt-14 max-w-2xl mx-auto ${styles.card}`}
         >
           <div className="flex flex-col items-center mb-8">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary relative">
@@ -82,11 +83,11 @@ export const BookingSuccess: React.FC = () => {
                 <CheckCircle2 size={40} className="stroke-[3]" />
               </motion.div>
             </div>
-            <h2 className="font-heading font-bold text-3xl md:text-4xl text-white mb-2">Reservation Confirmed</h2>
+            <h2 className={`font-heading font-bold text-3xl md:text-4xl mb-2 ${styles.title}`}>Reservation Confirmed</h2>
             <p className="text-primary font-medium tracking-wide text-lg">Reservation #VT-2026-{bookingId?.toUpperCase()?.substring(0, 4) || '0032'}</p>
           </div>
 
-          <div className="glass-panel rounded-2xl p-6 md:p-8 mb-10 text-center bg-white/5 border border-white/10">
+          <div className={`rounded-2xl p-6 md:p-8 mb-10 text-center ${styles.infoBox}`}>
             <p className="text-muted-foreground text-[15px] leading-relaxed mb-0">
               Your luxury ride has been reserved.<br/>
               A confirmation email and invoice have been sent.<br/>
@@ -101,7 +102,7 @@ export const BookingSuccess: React.FC = () => {
                 onClick={handleDownloadInvoice} 
                 disabled={isGenerating}
                 variant="outline" 
-                className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 px-8 h-12 rounded-xl transition-all"
+                className={`w-full sm:w-auto px-8 h-12 rounded-xl transition-all ${styles.outlineBtn}`}
               >
                 {isGenerating ? <Loader2 className="mr-2 animate-spin text-[#D4AF37]" size={18} /> : <Download className="mr-2 text-[#D4AF37]" size={18} />} 
                 {isGenerating ? 'Generating PDF...' : 'Download Invoice'}

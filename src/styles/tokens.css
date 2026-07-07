@@ -1,0 +1,156 @@
+/*
+ * ============================================================
+ * DESIGN TOKENS — Single source of truth for all visual styles
+ * Edit DARK MODE values in the :root / html.dark block
+ * Edit LIGHT MODE values in the html.light block
+ * ============================================================
+ */
+
+/* ── DARK MODE (default) ─────────────────────────────────── */
+:root,
+html.dark {
+  /* Page backgrounds */
+  --color-bg-page:        #0B0B0C;
+  --color-bg-secondary:   #111111;
+  --color-bg-card:        #0F0F10;
+  --color-bg-input:       #090909;
+  --color-bg-hover:       rgba(255, 255, 255, 0.04);
+  --color-bg-active:      rgba(255, 255, 255, 0.06);
+
+  /* Glass panel */
+  --glass-bg:             rgba(255, 255, 255, 0.05);
+  --glass-blur:           20px;
+  --glass-border:         rgba(255, 255, 255, 0.10);
+  --glass-shadow:         0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* Text */
+  --color-text-primary:   #FFFFFF;
+  --color-text-secondary: rgba(255, 255, 255, 0.60);
+  --color-text-muted:     rgba(255, 255, 255, 0.35);
+  --color-text-disabled:  rgba(255, 255, 255, 0.20);
+
+  /* Borders */
+  --color-border:         rgba(255, 255, 255, 0.10);
+  --color-border-subtle:  rgba(255, 255, 255, 0.05);
+  --color-border-strong:  rgba(255, 255, 255, 0.20);
+
+  /* Gold accent — stays on both themes */
+  --color-gold:           #D4AF37;
+  --color-gold-dark:      #B8921F;
+  --color-gold-bg:        rgba(212, 175, 55, 0.10);
+  --color-gold-border:    rgba(212, 175, 55, 0.20);
+  --color-gold-glow:      rgba(212, 175, 55, 0.30);
+
+  /* Status colors */
+  --color-success:        #22c55e;
+  --color-success-bg:     rgba(34, 197, 94, 0.10);
+  --color-success-border: rgba(34, 197, 94, 0.20);
+
+  --color-warning:        #eab308;
+  --color-warning-bg:     rgba(234, 179, 8, 0.10);
+  --color-warning-border: rgba(234, 179, 8, 0.20);
+
+  --color-danger:         #ef4444;
+  --color-danger-bg:      rgba(239, 68, 68, 0.10);
+  --color-danger-border:  rgba(239, 68, 68, 0.20);
+
+  --color-info:           #3b82f6;
+  --color-info-bg:        rgba(59, 130, 246, 0.10);
+  --color-info-border:    rgba(59, 130, 246, 0.20);
+
+  /* Shadows */
+  --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.40);
+  --shadow-md:    0 4px 16px rgba(0, 0, 0, 0.50);
+  --shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.60);
+  --shadow-xl:    0 16px 64px rgba(0, 0, 0, 0.70);
+  --shadow-gold:  0 0 20px rgba(212, 175, 55, 0.20);
+
+  /* Navbar */
+  --navbar-bg:    rgba(10, 10, 11, 0.85);
+  --navbar-border: rgba(255, 255, 255, 0.08);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --scrollbar-track: transparent;
+
+  /* Hero Section Overlays */
+  --hero-text-shadow:     none;
+  --hero-glass-bg:        transparent;
+  --hero-glass-border:    transparent;
+  --hero-gradient:        linear-gradient(to right, rgba(10, 10, 10, 0.9) 0%, rgba(35, 25, 10, 0.6) 60%, transparent 100%);
+  --hero-fade-bottom:     linear-gradient(to bottom, transparent, var(--color-bg-page));
+}
+
+/* ── LIGHT MODE ──────────────────────────────────────────── */
+html.light {
+  /* Page backgrounds */
+  --color-bg-page:        #F7F5F0;
+  --color-bg-secondary:   #FFFFFF;
+  --color-bg-card:        #FFFFFF;
+  --color-bg-input:       #F5F3EE;
+  --color-bg-hover:       rgba(0, 0, 0, 0.04);
+  --color-bg-active:      rgba(0, 0, 0, 0.06);
+
+  /* Glass panel */
+  --glass-bg:             rgba(255, 255, 255, 0.80);
+  --glass-blur:           20px;
+  --glass-border:         rgba(0, 0, 0, 0.08);
+  --glass-shadow:         0 4px 24px rgba(0, 0, 0, 0.07);
+
+  /* Text */
+  --color-text-primary:   #000000;
+  --color-text-secondary: #111111;
+  --color-text-muted:     #222222;
+  --color-text-disabled:  rgba(0, 0, 0, 0.25);
+
+  /* Borders */
+  --color-border:         rgba(0, 0, 0, 0.10);
+  --color-border-subtle:  rgba(0, 0, 0, 0.06);
+  --color-border-strong:  rgba(0, 0, 0, 0.18);
+
+  /* Gold — slightly richer for light bg */
+  --color-gold:           #B8921F;
+  --color-gold-dark:      #9A7A18;
+  --color-gold-bg:        rgba(184, 146, 31, 0.10);
+  --color-gold-border:    rgba(184, 146, 31, 0.20);
+  --color-gold-glow:      rgba(184, 146, 31, 0.20);
+
+  /* Status colors — same hues, lighter bg */
+  --color-success:        #16a34a;
+  --color-success-bg:     rgba(22, 163, 74, 0.08);
+  --color-success-border: rgba(22, 163, 74, 0.20);
+
+  --color-warning:        #ca8a04;
+  --color-warning-bg:     rgba(202, 138, 4, 0.08);
+  --color-warning-border: rgba(202, 138, 4, 0.20);
+
+  --color-danger:         #dc2626;
+  --color-danger-bg:      rgba(220, 38, 38, 0.08);
+  --color-danger-border:  rgba(220, 38, 38, 0.20);
+
+  --color-info:           #2563eb;
+  --color-info-bg:        rgba(37, 99, 235, 0.08);
+  --color-info-border:    rgba(37, 99, 235, 0.20);
+
+  /* Shadows */
+  --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md:    0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.10);
+  --shadow-xl:    0 16px 64px rgba(0, 0, 0, 0.12);
+  --shadow-gold:  0 0 20px rgba(212, 175, 55, 0.15);
+
+  /* Navbar */
+  --navbar-bg:    rgba(255, 255, 255, 0.55);
+  --navbar-border: rgba(0, 0, 0, 0.08);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-track: transparent;
+
+  /* Hero Section Overlays */
+  --hero-text-shadow:     0 2px 8px rgba(0, 0, 0, 0.1);
+  --hero-glass-bg:        transparent;
+  --hero-glass-border:    transparent;
+  --hero-gradient:        transparent;
+  --hero-fade-bottom:     transparent;
+}

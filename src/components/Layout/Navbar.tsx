@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useNotifications } from '@/lib/useNotifications';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -69,7 +70,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-[900] transition-all duration-300 ${isSticky ? 'bg-[#0a0a0a]/65 backdrop-blur-[18px] border-b border-white/5 shadow-2xl py-6' : 'bg-transparent py-10'}`}>
+      <nav className={`fixed top-0 left-0 w-full z-[900] transition-all duration-300 ${isSticky ? 'backdrop-blur-[18px] shadow-2xl py-6' : 'bg-transparent py-10'}`}
+        style={isSticky ? { background: 'var(--navbar-bg)', borderBottom: '1px solid var(--navbar-border)' } : {}}
+      >
         <div className="container px-6 md:px-8 flex justify-between items-center">
           {/* Logo (Only visible on Home, but takes up space everywhere) */}
           <Link 
@@ -106,6 +109,7 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle />
             {isLoggedIn ? (
               <>
                 {/* Notification Bell — only for regular users (not admin) */}
@@ -131,7 +135,7 @@ export const Navbar: React.FC = () => {
                   </button>
                   
                   {/* Dropdown Menu */}
-                  <div className="absolute right-0 mt-1 w-56 py-2 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-[999]">
+                  <div className="absolute right-0 mt-1 w-56 py-2 backdrop-blur-xl rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-[999]" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
                     <div className="px-4 py-2 border-b border-white/10 mb-2">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{user?.role === 'ADMIN' ? 'System Admin' : 'Premium Member'}</p>
                       <p className="text-xs text-white truncate">{user?.email}</p>
@@ -191,7 +195,7 @@ export const Navbar: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="w-[85vw] max-w-[400px] h-full bg-[#090909] bg-gradient-to-br from-[#090909] to-[#D4AF37]/5 shadow-2xl flex flex-col border-l border-white/5"
+              className="w-[85vw] max-w-[400px] h-full shadow-2xl flex flex-col" style={{ background: 'var(--color-bg-card)', borderLeft: '1px solid var(--color-border)' }}
             >
               {/* Header */}
               <div className="flex justify-between items-center p-6 border-b border-white/5">

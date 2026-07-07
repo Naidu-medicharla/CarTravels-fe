@@ -1,0 +1,50 @@
+/* ── Services Page ───────────────────────────────────────── */
+
+.page {
+  background: var(--color-bg-page);
+}
+
+.sectionAlt {
+  background: var(--color-bg-secondary);
+}
+
+.serviceCard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.serviceCard:hover {
+  border-color: var(--color-gold-border);
+  box-shadow: var(--shadow-gold);
+  transform: translateY(-2px);
+}
+
+.iconCircle {
+  background: var(--color-gold-bg);
+  border: 1px solid var(--color-gold-border);
+  color: var(--color-gold);
+}
+
+.featureItem {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.bodyText {
+  color: var(--color-text-secondary);
+}
+
+.divider {
+  background: var(--color-border);
+}
+
+.sectionBorder {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ctaSection {
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
